@@ -41,6 +41,24 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 - Setting up or modifying `lingui.config.js`
 - Debugging i18n issues
 
+### enhanced-message-context
+
+Add translator comments to Lingui messages so translators get the context they need. Comments describe where a message appears, what it does, and how to disambiguate it—improving translation quality without runtime cost.
+
+**What it covers:**
+
+- When to add `comment` fields (ambiguous words, isolated labels, domain terms, unclear variables)
+- When to skip comments (self-explanatory or already descriptive messages)
+- How to write effective comments (location, action/purpose, disambiguation)
+- API usage for `t`, `Trans`, and `defineMessage` with comments
+
+**Use when:**
+
+- Adding or modifying translatable messages
+- Working with short or ambiguous strings (e.g., "Back", "Delete", "Post")
+- Creating table headers, button labels, or tooltips without surrounding UI context
+- Messages with placeholders whose meaning isn't obvious (e.g., `{count}`, `{name}`)
+
 ### swc-plugin-compatibility
 
 Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack, or other SWC runtimes.
