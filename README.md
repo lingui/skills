@@ -99,6 +99,7 @@ If you prefer, you can install specific skills:
 ```bash
 npx skills add lingui/skills/lingui-best-practices
 npx skills add lingui/skills/swc-plugin-compatibility
+npx skills add lingui/skills/enhanced-message-context
 ```
 
 ## Compatibility
