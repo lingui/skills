@@ -5,7 +5,7 @@ description: Provide additional context for messages based on the codebase and t
 
 # Enhanced Message Context
 
-When implementing Lingui i18n, add translator comments to messages that need additional context. Not every message needs a comment - only those where the string alone could be misinterpreted.
+When implementing Lingui i18n, add translator comments to messages so translators have context to provide the best translation. Even when the message text is self-explanatory, it is important to know where and how it appears in the UI to choose the correct tone, length, and wording.
 
 ## When to Add Comments
 
@@ -21,16 +21,7 @@ Add a `comment` field when the message:
   - "Selected" (masculine/feminine/neutral depends on what is selected)
 - **Uses unclear variables**: Placeholder names don't reveal what they contain
   - `{count}` (count of what?), `{name}` (user name, file name, project name?)
-
-## When to Skip Comments
-
-Skip the `comment` field when the message:
-
-- **Is self-explanatory**: Full sentences with clear subject and verb
-  - "Click the button to continue" (no ambiguity)
-- **Is already descriptive**: Long enough to be unambiguous
-  - "Your password must be at least 8 characters long"
-- **Has a duplicate comment nearby**: Don't repeat identical comments for the same concept
+- **Could benefit from UI context even if clear**: Where the text appears (button, dialog, banner, form field) affects tone and length—add a brief location or purpose comment when it helps.
 
 ## Writing Effective Comments
 
@@ -211,11 +202,11 @@ const message = t({
 });
 ```
 
-### Example 5: Self-Explanatory Message (No Comment Needed)
+### Example 5: Self-Explanatory Message (Comment Still Optional but Helpful)
 
 ```jsx
-// Good - no comment needed, message is clear
-<Trans>
+// Message is clear on its own; adding a comment with location still helps translators
+<Trans comment="Validation hint shown below the password field on the sign-up form">
   Your password must contain at least 8 characters, including one uppercase letter and one number.
 </Trans>
 ```
