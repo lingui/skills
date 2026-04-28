@@ -21,7 +21,7 @@ Add a `comment` field when the message:
   - "Selected" (masculine/feminine/neutral depends on what is selected)
 - **Uses unclear variables**: Placeholder names don't reveal what they contain
   - `{count}` (count of what?), `{name}` (user name, file name, project name?)
-- **Could benefit from UI context even if clear**: Where the text appears (button, dialog, banner, form field) affects tone and length—add a brief location or purpose comment when it helps.
+- **Could benefit from UI context even if clear**: Where the text appears (button, dialog, banner, form field) affects tone and length - add a brief location or purpose comment when it helps.
 
 ## Writing Effective Comments
 

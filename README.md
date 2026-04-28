@@ -43,7 +43,7 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 
 ### enhanced-message-context
 
-Add translator comments to Lingui messages so translators get the context they need. Comments describe where a message appears, what it does, and how to disambiguate it—improving translation quality without runtime cost.
+Add translator comments to Lingui messages so translators get the context they need. Comments describe where a message appears, what it does, and how to disambiguate it - improving translation quality without runtime cost.
 
 **What it covers:**
 
@@ -77,6 +77,23 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 - Version pinning strategies
 - Alternative solutions (Babel plugin)
 
+### migrate-i18next-to-lingui
+
+Migration playbook for converting i18next/react-i18next projects to Lingui.
+
+**What it covers:**
+
+- Setup and tooling for Babel/SWC/Vite
+- Code migration patterns for React and JS/TS (`useTranslation`, `Trans`, `t`)
+- Plural/context/namespace migration strategies
+- Catalog conversion and verification (`lingui extract`, `lingui compile`)
+
+**Use when:**
+
+- Migrating an existing i18next or react-i18next codebase
+- Preserving translation keys with explicit Lingui IDs
+- Moving from JSON namespaces to Lingui catalogs
+
 ## Quick Start
 
 1. **Install all Lingui skills:**
@@ -100,6 +117,7 @@ If you prefer, you can install specific skills:
 npx skills add lingui/skills/lingui-best-practices
 npx skills add lingui/skills/swc-plugin-compatibility
 npx skills add lingui/skills/enhanced-message-context
+npx skills add lingui/skills/migrate-i18next-to-lingui
 ```
 
 ## Compatibility

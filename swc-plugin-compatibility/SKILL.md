@@ -22,7 +22,7 @@ SWC plugin support is experimental. The plugin API does not follow semantic vers
 
 SWC uses Rkyv to transfer the AST between the core and plugins. Both must agree on the exact memory layout of the AST. If the layout changes (e.g., new ECMAScript features), older plugins cannot read the data correctly.
 
-This layout cannot be negotiated at runtime—it must match at compile time.
+This layout cannot be negotiated at runtime - it must match at compile time.
 
 ## How to Fix
 
@@ -62,8 +62,8 @@ Use an **exact version** (no `^` or `~`) to prevent accidental upgrades.
 ## Rules to Avoid Build Breakage
 
 1. **Pin an exact plugin version** compatible with your runtime
-2. **Don't auto-bump `@lingui/swc-plugin`** — check release notes first
-3. **Don't auto-bump your runtime** (Next.js, Rspack, etc.) — runtimes may bump `swc-core` in minor/patch releases
+2. **Don't auto-bump `@lingui/swc-plugin`** - check release notes first
+3. **Don't auto-bump your runtime** (Next.js, Rspack, etc.) - runtimes may bump `swc-core` in minor/patch releases
 4. **Check compatibility after any upgrade** that touches SWC or the plugin
 
 ## Understanding Runtimes
