@@ -178,24 +178,18 @@ Combine with `Trans` for complex messages:
 
 ## Formatting Dates and Numbers
 
-Use `i18n.date()` and `i18n.number()` for locale-aware formatting:
+Use `Intl` directly:
 
 ```jsx
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from '@lingui/react/macro';
 
 function MyComponent() {
   const { i18n } = useLingui();
   const lastLogin = new Date();
-  
-  return (
-    <Trans>
-      Last login: {i18n.date(lastLogin)}
-    </Trans>
-  );
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.locale), [i18n.locale]);
+  return <Trans>Last login: {dateFormatter.format(lastLogin)}</Trans>;
 }
 ```
-
-These use the browser's `Intl` API for proper locale formatting.
 
 ## Message IDs and Context
 
