@@ -1,0 +1,13 @@
+{
+  "name": "lingui",
+  "displayName": "Lingui Skills",
+  "description": "Agent Skills for Lingui, a lightweight i18n framework for JavaScript and TypeScript",
+  "author": {
+    "name": "Lingui",
+    "url": "https://lingui.dev"
+  },
+  "homepage": "https://github.com/lingui/skills",
+  "repository": "https://github.com/lingui/skills",
+  "license": "MIT",
+  "keywords": ["lingui", "i18n", "internationalization", "localization", "javascript", "typescript", "react"]
+}

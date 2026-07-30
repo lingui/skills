@@ -1,0 +1,16 @@
+{
+  "name": "lingui-skills",
+  "description": "Agent Skills for Lingui, a lightweight i18n framework for JavaScript and TypeScript",
+  "owner": {
+    "name": "Lingui",
+    "url": "https://lingui.dev"
+  },
+  "plugins": [
+    {
+      "name": "lingui",
+      "source": "./",
+      "description": "Agent Skills for Lingui, a lightweight i18n framework for JavaScript and TypeScript",
+      "category": "productivity"
+    }
+  ]
+}
