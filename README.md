@@ -1,6 +1,6 @@
 # Lingui Skills
 
-This repository contains Agent Skills for [Lingui](https://lingui.dev) - a powerful internationalization framework for JavaScript applications.
+This repository contains Agent Skills for [Lingui](https://lingui.dev), a lightweight internationalization (i18n) framework for JavaScript and TypeScript.
 
 ## What are Agent Skills?
 
@@ -15,6 +15,43 @@ npx skills add lingui/skills
 ```
 
 This gives your AI coding agent access to comprehensive Lingui knowledge including best practices, common pitfalls, and configuration patterns.
+
+### Claude Code Plugin
+
+Alternatively, install the skills as a [Claude Code plugin](https://code.claude.com/docs/en/discover-plugins). In Claude Code, run:
+
+```
+/plugin marketplace add lingui/skills
+/plugin install lingui@lingui-skills
+```
+
+All skills load automatically and stay up to date via `/plugin marketplace update`.
+
+### Other Agent Tools (Plugin Install)
+
+The repo is also installable as a plugin via the [`plugins` CLI](https://npmx.dev/package/plugins), which auto-detects your installed agent tools (Claude Code, Cursor, Codex, Grok Build, Kimi Code, GitHub Copilot CLI, VS Code) and installs through each tool's native plugin system:
+
+```bash
+npx plugins add lingui/skills
+```
+
+### Gemini CLI
+
+The repo is a [Gemini CLI extension](https://geminicli.com/docs/extensions/) — install it with:
+
+```bash
+gemini extensions install https://github.com/lingui/skills
+```
+
+### GitHub CLI
+
+The [GitHub CLI](https://cli.github.com) (v2.90+) can install the skills for GitHub Copilot or any other supported agent:
+
+```bash
+gh skill install lingui/skills --all
+```
+
+Use `--agent <name>` (e.g. `--agent cursor`) to target a specific tool, and `gh skill update` to pull newer versions.
 
 ## Available Skills
 
@@ -114,21 +151,24 @@ Migration playbook for converting i18next/react-i18next projects to Lingui.
 
 If you prefer, you can install specific skills:
 ```bash
-npx skills add lingui/skills/lingui-best-practices
-npx skills add lingui/skills/swc-plugin-compatibility
-npx skills add lingui/skills/enhanced-message-context
-npx skills add lingui/skills/migrate-i18next-to-lingui
+npx skills add lingui/skills --skill lingui-best-practices
+npx skills add lingui/skills --skill swc-plugin-compatibility
+npx skills add lingui/skills --skill enhanced-message-context
+npx skills add lingui/skills --skill migrate-i18next-to-lingui
 ```
 
 ## Compatibility
 
 These skills are compatible with:
-- [Cursor](https://cursor.sh)
 - [Claude Code](https://claude.ai/product/claude-code)
+- [Cursor](https://cursor.sh)
+- [OpenAI Codex](https://openai.com/codex/)
+- [Gemini CLI](https://geminicli.com)
+- [GitHub Copilot](https://github.com/features/copilot)
+- [OpenCode](https://opencode.ai)
 - [Cline](https://cline.bot/)
 - [Windsurf](https://codeium.com/windsurf)
-- [GitHub Copilot](https://github.com/features/copilot)
-- And other agents supporting the skills.sh format
+- And other agents supporting the [Agent Skills](https://agentskills.io) format
 
 ## Resources
 
@@ -147,4 +187,4 @@ Have suggestions for improving these skills? Found an error?
 
 ## License
 
-MIT License - See the main [Lingui repository](https://github.com/lingui/js-lingui) for details.
+MIT — see [LICENSE](LICENSE).
