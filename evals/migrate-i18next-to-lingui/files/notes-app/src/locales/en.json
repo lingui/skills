@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "My Notes",
+    "subtitle": "Everything you write, in one place"
+  },
+  "welcome": "Hello <1>{{name}}</1>, ready to write?",
+  "note_one": "You have {{count}} note",
+  "note_other": "You have {{count}} notes",
+  "actions": {
+    "create": "New note",
+    "delete": "Delete",
+    "deleteConfirm": "This will permanently delete the note. Continue?"
+  }
+}
