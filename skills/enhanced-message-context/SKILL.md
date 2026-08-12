@@ -1,27 +1,41 @@
 ---
 name: enhanced-message-context
-description: Provide additional context for messages based on the codebase and the context of the message to improve the quality of the translations.
+description: Add translator comments to Lingui messages so translations are accurate. Use when adding or modifying translatable messages, when strings are short or ambiguous ("Back", "Delete", "Post"), when placeholders are unclear ({count}, {name}), when deciding between comment and context, or when auditing extracted .po catalogs for missing translator context.
 ---
 
 # Enhanced Message Context
 
 When implementing Lingui i18n, add translator comments to messages so translators have context to provide the best translation. Even when the message text is self-explanatory, it is important to know where and how it appears in the UI to choose the correct tone, length, and wording.
 
+## Know the App Domain First
+
+Before writing comments, identify what the product is about — check `package.json` description, the README, and route/component names. The domain disambiguates terms that are otherwise unresolvable: in a parking app, "Park" is a parking spot, not a nature park; in a social app, "Post" is likely a noun. Reference the domain in comments whenever a term is domain-sensitive.
+
 ## When to Add Comments
 
-Add a `comment` field when the message:
+Prioritize in tiers:
 
-- **Is ambiguous**: Short words/phrases that can be different parts of speech
+**Must comment** — translations will be wrong without it:
+
+- **Ambiguous short strings**: 1-2 word phrases with multiple meanings or parts of speech
   - "Back" (noun or verb?), "Delete" (button or confirmation?), "Close" (verb or adjective?)
-- **Lacks UI context**: Labels isolated from their surroundings
-  - Table column headers, tooltip content, standalone button labels, menu items
-- **Has domain-specific meaning**: Terms with different meanings across contexts
-  - "Post" (verb or noun?), "Tag" (noun or verb?), "Follow" (social media or instruction?)
-- **Depends on grammatical gender**: The translation depends on what the message refers to
+- **Action labels without a visible object**: the code shows what's acted on, the translator can't see it
+  - "Remove" (remove what?), "Apply" (apply to what?)
+- **Domain-sensitive terms**: words whose meaning depends on the product
+  - "Post" (verb or noun?), "Tag" (noun or verb?), "Park" (spot or greenspace?)
+- **Grammatical-gender dependence**: the translation depends on what the message refers to
   - "Selected" (masculine/feminine/neutral depends on what is selected)
-- **Uses unclear variables**: Placeholder names don't reveal what they contain
+- **Unclear placeholders**: names that don't reveal what they contain
   - `{count}` (count of what?), `{name}` (user name, file name, project name?)
-- **Could benefit from UI context even if clear**: Where the text appears (button, dialog, banner, form field) affects tone and length - add a brief location or purpose comment when it helps.
+
+**Should comment** — quality improves noticeably:
+
+- **UI jargon**: "Toast", "Drawer", "Chip", "Modal" — component names translators may read literally
+- **Abbreviations**: "Qty", "Avg", "N/A"
+- **Sentence fragments**: text completed by surrounding UI ("per month", "of 24")
+- **Labels isolated from surroundings**: table column headers, tooltips, menu items
+
+**Lower priority — but still valuable**: full, self-explanatory sentences. A brief location comment ("Validation hint below the password field") still helps translators choose tone and length. Plural branches don't need separate comments — one comment on the whole message covers all forms.
 
 ## Writing Effective Comments
 
@@ -41,6 +55,24 @@ A good translator comment includes:
    - "Used as a verb, not a noun"
    - "Refers to email addresses, not postal addresses"
    - "Singular form, user will see 'item' or 'items' based on count"
+
+### Quality Rules
+
+- **Describe where it appears and what it refers to — not what the word means.**
+  - Bad: "Save — means to store"
+  - Good: "Save button in the document editor toolbar"
+- **Keep it under ~80 characters.** A comment is a hint, not documentation.
+- **Reference the app domain** when the term is domain-sensitive: "Park — a parking spot, not a nature park"
+- **Write comments in the source language** of the project.
+- **Use consistent terminology** across all comments (same words for the same UI areas).
+
+### comment vs context
+
+They solve different problems — don't mix them up:
+
+- **`comment`** is advice for the translator. It never changes the message identity.
+- **`context`** changes the message ID: the same text with two `context` values becomes two catalog entries translated independently. Use it only when the same source text genuinely needs different translations ("right" as direction vs. correctness).
+- **Never use `context` as a namespace** (`auth.login`, `settings.title`). Identical strings with identical meaning should share one catalog entry; namespacing splits them into duplicate translation work.
 
 ## API Reference
 
@@ -202,7 +234,7 @@ const message = t({
 });
 ```
 
-### Example 5: Self-Explanatory Message (Comment Still Optional but Helpful)
+### Example 5: Self-Explanatory Message (Lower Priority, Still Valuable)
 
 ```jsx
 // Message is clear on its own; adding a comment with location still helps translators
@@ -215,11 +247,28 @@ const message = t({
 
 When implementing or reviewing Lingui messages:
 
-1. **Read the message**: Look at the string itself
-2. **Check context**: Consider where and how it's used in the code
-3. **Ask**: "Could a translator misinterpret this without seeing the UI?"
-4. **If yes**: Add a `comment` field with location, purpose, and any disambiguation
-5. **If no**: Skip the comment and keep the code clean
+1. **Know the domain**: Identify what the app is about (see above) so comments can disambiguate domain terms
+2. **Read the message**: Look at the string itself
+3. **Check context**: Consider where and how it's used in the code
+4. **Ask**: "Could a translator misinterpret this without seeing the UI?"
+5. **If yes**: Add a `comment` field with location, purpose, and any disambiguation
+6. **If no**: A brief location comment still helps tone and length — keep it short
+
+## Post-Extraction Review Pass
+
+After a batch of i18n work, audit the catalog instead of trusting that comments were added along the way:
+
+1. Run `lingui extract`
+2. Scan the source-locale `.po` file for entries with **no `#.` line** (that's where `comment` lands)
+3. For each uncommented entry, apply the tiers above: if it's a "must comment" case (short/ambiguous, unclear placeholder, domain term), go back to the source and add the comment
+4. Re-run `lingui extract` and confirm the `#.` lines appear
+
+```po
+#. Button in the toolbar that navigates to the previous page
+#: src/components/Toolbar.tsx:24
+msgid "Back"
+msgstr ""
+```
 
 ## Notes
 

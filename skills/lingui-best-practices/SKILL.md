@@ -57,6 +57,16 @@ function App() {
 
 ## Translating UI Text
 
+### Choosing the Right Macro
+
+Work through these questions in order:
+
+1. **Does the message depend on a count?** → `Plural` (JSX) or `plural` (strings). Never wrap a count-dependent string in plain `Trans` — that bakes English plural rules into the message.
+2. **Is it JSX content?** → `Trans`
+3. **Is it a string inside a component** (attribute, alert, function argument)? → `useLingui()` + `` t`...` ``
+4. **Is it defined outside a component** (module scope, constants, config)? → `msg` descriptor, resolved with `t(descriptor)` or `_(descriptor)` at render time
+5. **Is it in non-React code?** → `t` from `@lingui/core/macro`
+
 ### Use Trans for JSX Content
 
 The `Trans` macro is the primary way to translate JSX:
@@ -212,6 +222,8 @@ When the same text has different meanings, use `context`:
 
 These create separate catalog entries.
 
+Use `context` only when the same text genuinely needs different translations — not as a namespacing scheme (`auth.login`, `settings.title`). Identical strings with identical meaning should share one catalog entry so they are translated once.
+
 ### Comments for Translators
 
 Add context for translators:
@@ -242,6 +254,60 @@ export default defineConfig({
 
 For detailed configuration patterns, see [configuration.md](references/configuration.md).
 
+### Lingui 6 Notes
+
+Lingui 6 (April 2026) is ESM-only and requires Node.js ≥ 22.19 (or ≥ 24). If the project can't meet that, pin all `@lingui/*` packages to `^5`.
+
+The deprecated string form `format: "po"` and the `formatOptions` option were removed in v6. Omit `format` entirely (PO remains the default), or pass a formatter instance to configure it:
+
+```js
+import { defineConfig } from "@lingui/cli";
+import { formatter } from "@lingui/format-po";
+
+export default defineConfig({
+  // ...
+  format: formatter({ lineNumbers: false }),
+});
+```
+
+`lineNumbers: false` keeps catalog diffs small — line-number comments change on almost every source edit.
+
+## Catalog Hygiene
+
+Wire extraction and compilation into the project so they can't be forgotten:
+
+```json
+{
+  "scripts": {
+    "lingui:extract": "lingui extract",
+    "lingui:compile": "lingui compile",
+    "dev": "lingui compile && vite",
+    "build": "lingui compile && vite build"
+  }
+}
+```
+
+- **Prepend `lingui compile && ` to the existing `dev`/`build` scripts** — never replace them, and don't rely on a `prebuild` hook: pnpm ≥ 7 and Yarn Berry don't run pre/post hooks by default.
+- **Gitignore compiled catalogs by extension, never by directory.** A directory rule like `src/locales/` also swallows the `.po` files — the translation source of truth:
+
+```gitignore
+# ✅ compiled artifacts only
+src/locales/**/messages.ts
+src/locales/**/messages.js
+
+# ❌ never — silently untracks the .po sources too
+# src/locales/
+```
+
+Verify with `git check-ignore`: the compiled file must match, its `.po` sibling must not. Ignoring compiled catalogs is only safe because `lingui compile` runs before every build — don't do one without the other.
+- **Add a CI drift check** so catalog state is part of the PR contract:
+
+```json
+"i18n:check": "lingui compile && lingui extract --clean && git diff --exit-code -- src/locales"
+```
+
+This fails the build when someone adds or edits a message without re-running extraction.
+
 ## Best Practices
 
 ### Always Use Macros
@@ -271,6 +337,17 @@ const userName = user.name.toUpperCase();
 // Extracted as: "Hello {userName}"
 ```
 
+When extracting to a local variable isn't practical, name the placeholder inline with `ph()`:
+
+```jsx
+import { ph } from "@lingui/core/macro";
+
+// Extracted as: "Hello {name}" instead of "Hello {0}"
+t`Hello ${ph({ name: getUserName() })}`;
+```
+
+`ph()` also works inside `Trans`, `Plural`, and `Select`.
+
 ### Use Trans for JSX, t for Strings
 
 Choose the right tool:
@@ -298,6 +375,18 @@ import { msg } from "@lingui/core/macro";
 const LABELS = [msg`Red`, msg`Green`, msg`Blue`];
 ```
 
+### Don't Wrap Non-UI Strings
+
+Not every string is a message. Leave these unwrapped:
+
+- CSS classes and `className` values
+- `console.*` / logger output and developer-facing error codes
+- Import paths, URLs, API routes, query keys
+- Object keys, enum values, ALL_CAPS constants, `data-testid` values
+- Values that are compared against or persisted (statuses, slugs)
+
+Locale-prefixing URLs is a routing concern, not a translation concern — don't wrap paths in macros.
+
 ### Use the ESLint Plugin
 
 Install and configure `eslint-plugin-lingui` to catch common mistakes automatically:
@@ -314,6 +403,36 @@ export default [
   pluginLingui.configs["flat/recommended"],
 ];
 ```
+
+## Locale Metadata: Single-Source It
+
+Define locale facts once in a shared module with no React or framework imports, so it's safe to use from config, middleware, tests, and components alike:
+
+```ts
+// src/i18n/locales.ts
+export const locales = ["en", "es", "fr", "ar"] as const;
+export type Locale = (typeof locales)[number];
+export const sourceLocale: Locale = "en";
+
+const RTL_LOCALES = new Set(["ar", "he", "fa", "ur"]);
+export const getDirection = (locale: string): "ltr" | "rtl" =>
+  RTL_LOCALES.has(locale.split("-")[0]) ? "rtl" : "ltr";
+
+// "Deutsch", not "German" — each language name rendered in its own language
+export const localeDisplayName = (locale: string) =>
+  new Intl.DisplayNames([locale], { type: "language" }).of(locale) ?? locale;
+
+export function resolveLocale(candidate: string | undefined): Locale {
+  if (!candidate) return sourceLocale;
+  if ((locales as readonly string[]).includes(candidate)) return candidate as Locale;
+  const base = candidate.split("-")[0]; // es-MX → es
+  return (locales as readonly string[]).includes(base) ? (base as Locale) : sourceLocale;
+}
+```
+
+Signs this went wrong: `getDirection` or `Intl.DisplayNames` defined in more than one file, hardcoded `dir="rtl"` conditionals scattered around, hand-maintained language-name maps.
+
+Layout caveat: don't keep both `src/i18n.ts` and `src/i18n/` — the flat file shadows the directory's `index.ts` in module resolution, the build still passes, and the app is quietly wrong. Pick one layout.
 
 ## Common Patterns
 
