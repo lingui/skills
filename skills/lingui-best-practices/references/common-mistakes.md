@@ -68,6 +68,17 @@ function ColorList() {
 }
 ```
 
+### Bundle-Size Caveat for Module-Level msg
+
+Module-scope `msg` calls are side effects a bundler cannot drop. In a lazy-loaded route, wrap the definition in a `/* @__PURE__ */` IIFE so tree-shaking can remove it when unused:
+
+```js
+const STATUSES = /* @__PURE__ */ (() => ({
+  active: msg`Active`,
+  inactive: msg`Inactive`,
+}))();
+```
+
 ## Plural Form Misunderstandings
 
 ### Zero Form Doesn't Exist in English
@@ -133,6 +144,20 @@ Be aware that decimal numbers (even `1.0`) use the `other` form:
 ```jsx
 <Plural value={1.0} one="# item" other="# items" />
 // Shows: "1.0 items" (not "1.0 item")
+```
+
+### Ternary Instead of Plural
+
+Never use a ternary to pick between two separate translation strings:
+
+```jsx
+// ❌ WRONG - bakes English's two plural forms into code logic;
+// languages with 3-6 plural forms (Polish, Arabic, ...) can't translate this correctly
+const label = count === 1 ? t`1 item` : t`${count} items`;
+
+// ✅ CORRECT - one message, CLDR picks the form per language
+import { plural } from "@lingui/core/macro";
+const label = plural(count, { one: "# item", other: "# items" });
 ```
 
 ## Memoization Pitfalls
@@ -262,6 +287,17 @@ Even simple method calls should be extracted:
 // ✅ GOOD
 const userName = currentUser.getName();
 <Trans>Welcome {userName}</Trans>
+```
+
+### Alternative: Name the Placeholder with ph()
+
+When a local variable is awkward (e.g., inside a tight expression), name the placeholder inline:
+
+```jsx
+import { ph } from "@lingui/core/macro";
+
+<Trans>Welcome {ph({ userName: currentUser.getName() })}</Trans>
+// Extracted as: "Welcome {userName}"
 ```
 
 ### ESLint Rule

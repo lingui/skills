@@ -61,13 +61,17 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 
 **What it covers:**
 
+- Choosing the right macro (`Trans`, `t`, `msg`, `Plural`) for each situation
 - Setting up Lingui with `I18nProvider`
 - Using `Trans` macro for JSX translations
 - Using `useLingui()` for non-JSX translations
 - Pluralization with `Plural` component
+- Naming placeholders with `ph()` instead of positional `{0}`
 - Date and number formatting
 - Message extraction and compilation workflow
-- Configuration patterns
+- Catalog hygiene: build-script integration, gitignore rules, CI drift check
+- Single-sourced locale metadata (direction, display names, fallback resolution)
+- Configuration patterns and Lingui 6 upgrade notes (ESM-only, Node ≥ 22.19)
 - Common mistakes and how to avoid them
 
 **Use when:**
@@ -84,9 +88,11 @@ Add translator comments to Lingui messages so translators get the context they n
 
 **What it covers:**
 
-- When to add `comment` fields (ambiguous words, isolated labels, domain terms, unclear variables)
-- When to skip comments (self-explanatory or already descriptive messages)
-- How to write effective comments (location, action/purpose, disambiguation)
+- Tiered guidance on when to add `comment` fields (must / should / lower priority)
+- Detecting the app domain and using it to disambiguate terms
+- How to write effective comments (location, action/purpose, disambiguation, under ~80 chars)
+- `comment` vs `context` — and why `context` must not be used for namespacing
+- A post-extraction review pass to catch uncommented `.po` entries
 - API usage for `t`, `Trans`, and `defineMessage` with comments
 
 **Use when:**
@@ -106,13 +112,15 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 - `failed to run Wasm plugin transform`
 - `RuntimeError: out of bounds memory access`
 - `LayoutError called Result::unwrap()`
+- A successful build where macros are silently not transformed
 
 **What it covers:**
 
 - Why SWC plugin compatibility errors happen
 - How to find compatible plugin versions
 - Version pinning strategies
-- Alternative solutions (Babel plugin)
+- The plugin tuple-shape trap that silently disables macros
+- Alternative solutions (Babel plugin) and the `@vitejs/plugin-react@6` caveat
 
 ### migrate-i18next-to-lingui
 
@@ -124,6 +132,7 @@ Migration playbook for converting i18next/react-i18next projects to Lingui.
 - Code migration patterns for React and JS/TS (`useTranslation`, `Trans`, `t`)
 - Plural/context/namespace migration strategies
 - Catalog conversion and verification (`lingui extract`, `lingui compile`)
+- A post-migration recall check that finds leftover i18next code and unwrapped strings
 
 **Use when:**
 

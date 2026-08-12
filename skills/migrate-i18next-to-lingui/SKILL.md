@@ -23,6 +23,8 @@ description: Migrate i18next/react-i18next projects to Lingui. Use when the user
 
 ## Step 1: Install Lingui
 
+> **Node version gate**: Lingui 6 is ESM-only and requires Node.js ≥ 22.19 (or ≥ 24). On older Node, pin all `@lingui/*` packages to `^5`.
+
 ```bash
 # Core (always required)
 npm install @lingui/core @lingui/react
@@ -79,6 +81,8 @@ module.exports = {
   },
 };
 ```
+
+**Build-tooling caveats**: `@lingui/swc-plugin` must be version-matched to your SWC runtime, plugin entries must be `[name, options]` tuples (a bare string silently disables macros), and `@vitejs/plugin-react@6` removed Babel support entirely — see the `swc-plugin-compatibility` skill for all three.
 
 ## Step 4: Replace i18n Initialization
 
@@ -325,9 +329,13 @@ See [catalog-conversion.md](references/catalog-conversion.md) for and patterns.
 
 ## Step 10: Build & Verify
 
+Run the full verification loop in this order — each stage catches what the previous one can't:
+
 ```bash
-npx lingui extract    # extracts all messages → .po files
-npx lingui compile    # compiles .po → .js message catalogs
+npx lingui extract --clean   # extracts all messages → .po files, drops obsolete entries
+npx lingui compile           # compiles .po → runtime message catalogs
+npx tsc --noEmit             # type errors from changed imports/APIs
+npm run build                # macro transform actually runs in the real build
 ```
 
 Add to `package.json`:
@@ -344,6 +352,39 @@ For TypeScript:
 ```bash
 npx lingui compile --typescript
 ```
+
+### Recall Check: Find Strings the Migration Missed
+
+A green build only proves the migrated strings work — not that all strings were migrated. Two checks:
+
+**1. No i18next remnants.** All of these should return nothing:
+
+```bash
+grep -rn "from ['\"]i18next\|from ['\"]react-i18next" src/
+grep -rn "useTranslation\|i18nKey\|i18next.t(" src/
+```
+
+**2. No unwrapped user-facing strings.** Run `eslint-plugin-lingui`'s `no-unlocalized-strings` rule over the tree — it catches hardcoded strings that were never in i18next to begin with, plus any `defaultValue` text left behind as plain strings:
+
+```js
+// eslint.config.js
+import pluginLingui from "eslint-plugin-lingui";
+
+export default [
+  {
+    plugins: { lingui: pluginLingui },
+    rules: {
+      "lingui/no-unlocalized-strings": ["warn", {
+        ignore: ["^[A-Z0-9_-]+$"],                    // enums, constants
+        ignoreNames: ["className", "src", "data-testid"],
+        ignoreFunctions: ["console.*", "cn", "cva"],
+      }],
+    },
+  },
+];
+```
+
+The scan is deliberately over-inclusive — review each hit and either wrap it or confirm it's a non-UI string (class names, keys, URLs). Keep the plugin installed afterwards as a permanent guardrail. Report any strings you deliberately leave unwrapped rather than silently skipping them.
 
 ## Step 11: Remove i18next
 

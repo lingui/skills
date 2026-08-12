@@ -1,6 +1,6 @@
 ---
 name: swc-plugin-compatibility
-description: Diagnose and fix Lingui SWC plugin compatibility errors with Next.js, Rspack, or other SWC runtimes. Use when seeing errors like "failed to invoke plugin", "failed to run Wasm plugin transform", "out of bounds memory access", or "LayoutError" during builds with @lingui/swc-plugin.
+description: Diagnose and fix Lingui SWC plugin compatibility errors with Next.js, Vite, Rspack, or other SWC runtimes. Use when seeing errors like "failed to invoke plugin", "failed to run Wasm plugin transform", "out of bounds memory access", or "LayoutError" during builds with @lingui/swc-plugin — or when macros are silently not transformed (build succeeds but Trans/t render as raw untranslated output).
 ---
 
 # SWC Plugin Compatibility
@@ -108,9 +108,55 @@ module.exports = nextConfig;
 }
 ```
 
+## Example: Vite Configuration
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import { lingui } from "@lingui/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    react({ plugins: [["@lingui/swc-plugin", {}]] }),
+    lingui(),
+  ],
+});
+```
+
+## Silent Failure: Wrong Plugin Entry Shape
+
+Every SWC plugin entry must be a `[name, options]` **tuple**, even with empty options. Passing the plugin name as a bare string silently disables the macro transform: the build succeeds, but `<Trans>` never resolves and messages render as raw macro output.
+
+```ts
+// ❌ Silently does nothing
+react({ plugins: ["@lingui/swc-plugin"] })
+
+// ✅ Tuple with options object
+react({ plugins: [["@lingui/swc-plugin", {}]] })
+```
+
+The same applies to Next.js `swcPlugins` and `.swcrc` `plugins` arrays.
+
 ## What If No Compatible Version Exists?
 
-If your runtime uses a newer `swc-core` that no plugin version supports yet:
+If your runtime uses a newer `swc-core` that no plugin version supports yet, you have three options — make this an explicit choice rather than guessing:
 
-1. Check for recent plugin releases
-2. Open an issue or PR at https://github.com/lingui/swc-plugin
+1. **Pin the runtime** to the newest version that still has a compatible plugin (check https://plugins.swc.rs), and wait for a plugin release before upgrading
+2. **Switch to the Babel transform** (`babel-plugin-lingui-macro`) — see the caveat below
+3. Open an issue or PR at https://github.com/lingui/swc-plugin
+
+### Babel Fallback Caveat: @vitejs/plugin-react 6
+
+`@vitejs/plugin-react@6` (2026) dropped its internal Babel and **removed the `babel` option entirely**. On v6+, the classic form:
+
+```ts
+react({ babel: { plugins: ["@lingui/babel-plugin-lingui-macro"] } })
+```
+
+no longer works — a TypeScript config fails with TS2353 ("babel does not exist in type..."); a plain JS config is **silently ignored** and macros never get transformed.
+
+Your options on Vite:
+
+- Stay on SWC: `@vitejs/plugin-react-swc` + a pinned compatible `@lingui/swc-plugin` (preferred)
+- Pin `@vitejs/plugin-react@^5`, which still supports the `babel` option

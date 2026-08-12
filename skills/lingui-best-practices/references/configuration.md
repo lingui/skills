@@ -165,9 +165,22 @@ path: "src/locales/{locale}/messages"
 import { messages } from "./locales/en/messages";
 ```
 
+## Catalog Format (Lingui 6+)
+
+PO is the default format — omit `format` entirely unless you need to configure it. The string form `format: "po"` and `formatOptions` were removed in Lingui 6; pass a formatter instance instead:
+
+```js
+import { formatter } from "@lingui/format-po";
+
+export default defineConfig({
+  // ...
+  format: formatter({ lineNumbers: false }),
+});
+```
+
 ## Best Practices
 
 1. **Use `<rootDir>` token** for portable paths
 2. **Always exclude test files** in `exclude` patterns
 3. **Set `sourceLocale`** to your development language
-4. **Add `.gitignore` for compiled files**: `*.js` in locale directories
+4. **Gitignore compiled catalogs by extension, never by directory** — `src/locales/**/messages.js` (and `.ts`), not `src/locales/` (a directory rule silently untracks the `.po` sources too). Verify with `git check-ignore`: the compiled file matches, the `.po` sibling doesn't.
