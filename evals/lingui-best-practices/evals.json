@@ -1,0 +1,36 @@
+{
+  "skill_name": "lingui-best-practices",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "internationalize-inbox-component",
+      "prompt": "Internationalize the Inbox component (src/components/Inbox.tsx) with Lingui so every user-facing string is translatable. The project already has Lingui installed and configured. Don't run npm install or builds — make the code changes only.",
+      "expected_output": "Inbox.tsx fully internationalized: Trans for JSX text, t from useLingui for the placeholder attribute, an ICU plural instead of the count ternary, msg descriptors for the module-level filter labels, and named placeholders for complex expressions.",
+      "files": ["evals/lingui-best-practices/files/inbox-app"],
+      "expectations": [
+        "src/components/Inbox.tsx imports macros from @lingui/react/macro (and @lingui/core/macro where needed), never from the deprecated @lingui/macro package",
+        "The unread-message count is expressed as a single ICU plural (Plural component or plural macro) instead of the count === 1 ternary",
+        "The search input placeholder is translated with t from the useLingui() macro, not left hardcoded and not wrapped in a Trans element",
+        "The module-level FILTERS labels use msg descriptors resolved at render time, not t at module scope and not hardcoded strings",
+        "The complex interpolations (user.name.toUpperCase() and formatTime(lastSync)) are given meaningful placeholder names via a named local variable or ph(), so no positional {0} placeholders would be extracted",
+        "The JSX headings, welcome text, and the 'Notification settings' link text are wrapped with Trans",
+        "The settings link href (/settings) is unchanged — URLs are not wrapped or localized"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "catalog-hygiene-wiring",
+      "prompt": "Compiled Lingui catalogs (src/locales/**/messages.ts) keep showing up in PRs, and translators keep finding stale .po files because people forget to run extract. Wire up this project so neither can happen again. Don't run npm install or builds — config and script changes only.",
+      "expected_output": "Build/dev scripts compile catalogs automatically, compiled catalogs are gitignored by extension (with .po files still tracked), and a drift check exists for CI.",
+      "files": ["evals/lingui-best-practices/files/hygiene-app"],
+      "expectations": [
+        "The dev and build scripts run lingui compile before the existing command by prepending to it — the original vite and tsc -b && vite build commands remain",
+        "No prebuild or predev lifecycle hook is used for compilation",
+        ".gitignore ignores the compiled catalogs by extension or filename (e.g. src/locales/**/messages.ts), not by ignoring the locales directory",
+        "The .po files are NOT matched by any new gitignore rule",
+        "A CI-usable drift check exists: a script (or workflow) that runs lingui compile and lingui extract --clean and fails when git diff shows catalog changes",
+        "The answer addresses untracking the already-committed compiled catalogs (git rm --cached) — mentioned or performed"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "skill_name": "enhanced-message-context",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "ambiguous-strings-comments",
+      "prompt": "Translators keep mistranslating strings from this app. Add translator context to the messages in src/components so every ambiguous string is clear. Code changes only.",
+      "expected_output": "Ambiguous messages (Back, Post, Archive, column headers, the selected-count message) carry comment fields describing location and purpose; context props are not abused for organization.",
+      "files": ["evals/enhanced-message-context/files/publishing-dashboard"],
+      "expectations": [
+        "The Back button Trans gets a comment describing where it appears and what it does (a navigation action), not a definition of the word",
+        "The Post button comment disambiguates it as a verb (publish action), consistent with the app being a blog publishing platform per package.json's description",
+        "The Archive t-call gets a comment — converted to the t({ comment, message }) object form or an equivalent that attaches a comment",
+        "Each table column header label (Name, Status, Created) gets a comment saying what the column shows",
+        "The '{selectedCount} selected' message gets a comment clarifying what is selected and what the placeholder value is",
+        "comment is used throughout — the context prop is not introduced, and no namespace-like values (e.g. toolbar.back) appear anywhere",
+        "Comments describe location and referent rather than defining word meanings, and are concise (roughly under 120 characters each)"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "comment-vs-context-collision",
+      "prompt": "Translators report that 'right' needs two different translations in this app: in the editor it means the alignment direction, in the quiz it means a correct answer — but the catalog only has one entry so one of them is always wrong. Fix that, and add whatever translator context the rest of the messages in src/ need. Code changes only.",
+      "expected_output": "The two 'right' occurrences are split into separate catalog entries via distinct context values; identical-meaning Save buttons stay one entry (comments only); the explanation distinguishes comment from context.",
+      "files": ["evals/enhanced-message-context/files/course-authoring"],
+      "expectations": [
+        "Both <Trans>right</Trans> occurrences get a context prop with distinct values (one for text alignment, one for a correct answer), producing two catalog entries",
+        "The two Save buttons do NOT get different context values — identical meaning stays one catalog entry; adding comments to them is acceptable",
+        "The alignment left/center/right button group is treated consistently (e.g. 'left' gets the same alignment context or equivalent consistent handling as 'right')",
+        "'wrong' in the quiz gets treatment consistent with the graded-answer 'right' (context or comment referencing the quiz result)",
+        "The explanation distinguishes comment (translator hint, same catalog entry) from context (changes message identity, separate entries)"
+      ]
+    }
+  ]
+}

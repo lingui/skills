@@ -1,0 +1,32 @@
+{
+  "skill_name": "swc-plugin-compatibility",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "silent-macro-transform-failure",
+      "prompt": "Something is wrong with this app's i18n: the Spanish catalog is compiled and loaded (see src/main.tsx), the build reports no errors, but in the browser every <Trans> string still shows raw English source text and switching locales does nothing. Figure out what's wrong and fix it. Don't run npm install or builds.",
+      "expected_output": "The bare-string SWC plugin entry in vite.config.ts is identified as silently disabling the macro transform and changed to a [name, options] tuple.",
+      "files": ["evals/swc-plugin-compatibility/files/vite-silent"],
+      "expectations": [
+        "vite.config.ts is changed so the SWC plugin entry is a [name, options] tuple — [[\"@lingui/swc-plugin\", {}]] — instead of the bare string",
+        "The explanation identifies that a bare-string plugin entry silently disables the macro transform while the build still succeeds",
+        "Application code (App.tsx, main.tsx) is not rewritten to the runtime API, and Lingui is not removed or replaced",
+        "No dependency versions are changed — the problem is config shape, not versions"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "wasm-plugin-crash-pinning",
+      "prompt": "Since last week `next build` fails with:\n\n  failed to run Wasm plugin transform: RuntimeError: out of bounds memory access\n  failed to invoke plugin on 'Some(\"/app/app/page.tsx\")'\n\nNothing in our code changed — only dependency updates were merged. Diagnose and fix this project. Don't run npm install or builds.",
+      "expected_output": "The crash is diagnosed as an SWC plugin/runtime version mismatch; @lingui/swc-plugin gets pinned to an exact compatible version with guidance on checking compatibility before future upgrades.",
+      "files": ["evals/swc-plugin-compatibility/files/next-crash"],
+      "expectations": [
+        "The diagnosis attributes the crash to an SWC plugin/runtime (swc_core ABI) version mismatch, not to a bug in the app code or in Lingui itself",
+        "@lingui/swc-plugin in package.json ends up pinned to an exact version with no ^ or ~ prefix",
+        "The answer references a compatibility source for choosing the version: the lingui/swc-plugin compatibility table or https://plugins.swc.rs",
+        "The fix does not abandon SWC for Babel and does not upgrade or downgrade Next.js as the primary fix",
+        "The answer warns against auto-bumping @lingui/swc-plugin or the SWC runtime (Next.js) without re-checking compatibility"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "Meine Notizen",
+    "subtitle": "Alles, was du schreibst, an einem Ort"
+  },
+  "welcome": "Hallo <1>{{name}}</1>, bereit zum Schreiben?",
+  "note_one": "Du hast {{count}} Notiz",
+  "note_other": "Du hast {{count}} Notizen",
+  "actions": {
+    "create": "Neue Notiz",
+    "delete": "Löschen",
+    "deleteConfirm": "Die Notiz wird dauerhaft gelöscht. Fortfahren?"
+  }
+}

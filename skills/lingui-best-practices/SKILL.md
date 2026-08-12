@@ -300,6 +300,8 @@ src/locales/**/messages.js
 ```
 
 Verify with `git check-ignore`: the compiled file must match, its `.po` sibling must not. Ignoring compiled catalogs is only safe because `lingui compile` runs before every build — don't do one without the other.
+- **Match `compileNamespace` to how the app imports the catalog.** If the code imports `./locales/en/messages` as a `.ts` file, set `compileNamespace: "ts"` in `lingui.config` so a plain `lingui compile` regenerates exactly that artifact — no `--typescript` flag anyone can forget.
+- **Vite alternative**: with `@lingui/vite-plugin`, the app can dynamically import `.po` catalogs directly (`await import(\`./locales/${locale}/messages.po\`)`) — the plugin compiles on the fly, so there are no compiled catalog files to script around or gitignore.
 - **Add a CI drift check** so catalog state is part of the PR contract:
 
 ```json
