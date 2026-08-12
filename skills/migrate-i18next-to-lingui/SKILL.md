@@ -34,10 +34,10 @@ npm install --save-dev @lingui/cli
 
 # Macro support - pick one based on build tool:
 # Babel
-npm install --save-dev babel-plugin-macros
+npm install --save-dev @lingui/babel-plugin-lingui-macro
 # SWC
 npm install --save-dev @lingui/swc-plugin
-# Vite
+# Vite (also install the Babel macro plugin above — see Step 3)
 npm install --save-dev @lingui/vite-plugin
 ```
 
@@ -65,7 +65,31 @@ export default defineConfig({
 import { lingui } from "@lingui/vite-plugin";
 import react from "@vitejs/plugin-react";
 
-export default { plugins: [react(), lingui()] };
+export default {
+  plugins: [
+    react({ babel: { plugins: ["@lingui/babel-plugin-lingui-macro"] } }),
+    lingui(),
+  ],
+};
+```
+
+`lingui()` alone does not transform macros — the Babel macro plugin inside `react()` does that (requires `@vitejs/plugin-react@^5`; v6 removed the `babel` option — use the SWC variant instead).
+
+The `lingui()` plugin also compiles `.po` catalogs on the fly, so on Vite the app can import catalogs directly and skip the `lingui compile` step entirely:
+
+```ts
+// Dynamic import; the .po extension is mandatory
+const { messages } = await import(`./locales/${locale}/messages.po`);
+```
+
+For TypeScript, declare the module so `.po` imports type-check:
+
+```ts
+// src/vite-env.d.ts
+declare module "*.po" {
+  import type { Messages } from "@lingui/core";
+  export const messages: Messages;
+}
 ```
 
 **Babel** (`.babelrc` or `babel.config.js`):
@@ -337,6 +361,8 @@ npx lingui compile           # compiles .po → runtime message catalogs
 npx tsc --noEmit             # type errors from changed imports/APIs
 npm run build                # macro transform actually runs in the real build
 ```
+
+On Vite with `@lingui/vite-plugin` importing `.po` catalogs directly (Step 3), skip `lingui compile` — the plugin compiles at dev/build time and there are no compiled catalog files to manage.
 
 Add to `package.json`:
 ```json
