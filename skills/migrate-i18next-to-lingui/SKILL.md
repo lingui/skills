@@ -412,6 +412,8 @@ export default [
 
 The scan is deliberately over-inclusive — review each hit and either wrap it or confirm it's a non-UI string (class names, keys, URLs). Keep the plugin installed afterwards as a permanent guardrail. Report any strings you deliberately leave unwrapped rather than silently skipping them.
 
+For the full audit loop — tuned scanner config, bounded fix rounds, residual reporting — use the **find-unwrapped-strings** skill. The check above is its migration-scoped subset.
+
 ## Step 11: Remove i18next
 
 ```bash

@@ -142,6 +142,26 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 - The plugin tuple-shape trap that silently disables macros
 - Alternative solutions (Babel plugin) and the `@vitejs/plugin-react@6` caveat
 
+### find-unwrapped-strings
+
+Audits a Lingui project for hardcoded user-facing strings that were never wrapped — the ones a green build hides: display copy in data modules, toast and error helper maps, config labels.
+
+**What it covers:**
+
+- Installing `eslint-plugin-lingui` as a permanent guardrail, with tuned `no-unlocalized-strings` options
+- Why the plugin's `recommended` presets don't enable the rule, and why `--rule` on the CLI discards tuned ignores
+- Judging every hit against the skip-list — string *role*, not string shape
+- Wrapping display copy defined outside components with `msg` descriptors, and why `t` at module scope silently never updates
+- A bounded fix loop (2 rounds / ~40 files) that always reports residuals as wrapped / skipped-with-reason / out-of-budget
+- Growing the rule's ignores from confirmed false positives instead of weakening it
+
+**Use when:**
+
+- Text renders in the source language even though the catalogs look complete
+- Auditing what an i18n setup or migration missed
+- Checking i18n coverage on a project where Lingui is already established
+- The audit lint rule is noisy and you need it quiet without losing the guardrail
+
 ### migrate-i18next-to-lingui
 
 Migration playbook for converting i18next/react-i18next projects to Lingui.
@@ -184,6 +204,7 @@ npx skills add lingui/skills --skill lingui-best-practices
 npx skills add lingui/skills --skill lingui-framework-setup
 npx skills add lingui/skills --skill swc-plugin-compatibility
 npx skills add lingui/skills --skill enhanced-message-context
+npx skills add lingui/skills --skill find-unwrapped-strings
 npx skills add lingui/skills --skill migrate-i18next-to-lingui
 ```
 
