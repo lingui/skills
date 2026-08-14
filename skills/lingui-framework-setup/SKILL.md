@@ -1,6 +1,6 @@
 ---
 name: lingui-framework-setup
-description: Set up Lingui in a specific React framework. Use when adding Lingui to Next.js (App Router), Vite, React Router 7, Remix, or TanStack Start projects, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, when a working Lingui setup breaks after a framework upgrade, or when macros silently stop being transformed after a build-tool change.
+description: Use when adding Lingui to a Next.js App Router, Vite, React Router 7, Remix, or TanStack Start project, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, or when a working Lingui setup breaks after a framework or build-tool upgrade — including macros that silently stop being transformed.
 ---
 
 # Lingui Framework Setup
@@ -55,7 +55,9 @@ One more distinction that changes everything: `react-router` in deps **without**
 
 ## Step 3 — Framework reference
 
-Read the matching reference file fully before editing the project. Each covers, in order: packages → build-tool wiring → config → locale resolution → provider/layout wiring → routing strategies → language switcher → gotchas → verification.
+Read the matching reference file fully before editing the project. Every reference follows the same section contract, in order:
+
+**packages → build-tool integration → `lingui.config` → locale resolution → provider/layout wiring → routing strategies → language switcher → gotchas → verification**
 
 If the project needs locale-prefixed URLs, every reference offers the same three strategies — unprefixed source locale, all locales prefixed, or no URL locale (cookie/storage only). Restructuring routes is invasive: ask the user which strategy they want before moving files.
 
@@ -67,14 +69,16 @@ Run in this order; each step must pass before the next:
 npx lingui extract --clean   # catalogs regenerate; count matches expectations
 npx lingui compile           # only on stacks with compiled catalogs (Next.js)
 npx tsc --noEmit             # types resolve, incl. catalog imports
-npm run build                # macro transform actually ran
+npm run build                # macro wiring errors surface here
 ```
 
-If the build passes but `<Trans>` renders raw untranslated text, the macro transform is not running — that is a compiler wiring problem (wrong plugin, bare-string SWC entry, or the `@vitejs/plugin-react@6` babel trap); see the swc-plugin-compatibility skill.
+**Then prove the transform ran.** A green build does not: a mis-wired macro transform is silently a no-op and the app ships in the source language. Translate one string in a non-source catalog, run the app in that locale, and confirm the translation reaches the browser (each reference gives the stack's exact check — `curl` the server-rendered HTML on SSR stacks, hard-load a deep link on the SPA). The setup is done when you have seen a translated string, not when the build is green.
+
+Raw untranslated text at that point is a compiler wiring problem — wrong plugin, bare-string SWC entry, or the `@vitejs/plugin-react@6` babel trap; see the swc-plugin-compatibility skill.
 
 ## Adding a new framework
 
-To extend this skill to another stack (e.g. a new meta-framework), add one row to the detection table above and one file under `references/` following the same section contract: **Packages → Build tool integration → lingui.config → Locale resolution → Provider wiring → Routing strategies → Language switcher → Gotchas → Verification.** Keep the common rules here (version gate, catalog models, detect-locale ban under SSR) and put only framework-specific facts in the reference; every non-obvious rule carries a one-sentence why.
+Another stack (a new meta-framework, a new build tool) costs two edits: one row in the Step 1 detection table, and one file under `references/` following the Step 3 section contract. Framework-specific facts go in the reference; anything true of every stack — the version gate, the two catalog-loading models, the SSR `detect-locale` rule — stays here, stated once. Every non-obvious rule carries a one-sentence why.
 
 ## Related skills
 

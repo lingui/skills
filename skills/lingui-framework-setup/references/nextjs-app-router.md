@@ -215,10 +215,11 @@ export function Greeting() {
 ```tsx
 import { t } from '@lingui/core/macro'
 import { getI18nInstance } from '../../appRouterI18n'
+import { resolveLocale } from '../../i18n/locales'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
-  const i18n = getI18nInstance(locale)
+  const i18n = getI18nInstance(resolveLocale(locale)) // params are strings; resolveLocale narrows to Locale
   return { title: t(i18n)`My App` }
 }
 ```
@@ -301,7 +302,7 @@ Under strategy 1, strip the prefix for the source locale instead of adding `/{so
 
 ## Next.js Pages Router (brief)
 
-Lingui fully supports the Pages Router — the official `nextjs-swc` example ships both routers side by side — it is just a different, simpler wiring: Next's built-in i18n routing (`i18n: { locales, defaultLocale }` in `next.config`, a Pages-Router-only feature), catalogs loaded in `getStaticProps`/`getServerSideProps`, and a plain `I18nProvider` in `_app.tsx`. No `setI18n`, no instance map — there are no server components. This reference doesn't cover it step by step; don't tell users it's unsupported.
+Lingui fully supports the Pages Router — the official `nextjs-swc` example ships both routers side by side. Tell users so, and wire the simpler shape: Next's built-in i18n routing (`i18n: { locales, defaultLocale }` in `next.config`, a Pages-Router-only feature), catalogs loaded in `getStaticProps`/`getServerSideProps`, and a plain `I18nProvider` in `_app.tsx`. No `setI18n`, no instance map — there are no server components. The packages, `lingui.config`, scripts, and locale module above all carry over unchanged.
 
 ## Advanced: per-page catalogs
 

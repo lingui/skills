@@ -43,7 +43,7 @@ react({
 lingui(),
 ```
 
-**`@vitejs/plugin-react` v6+**: the `babel` option was **removed**. A TS config fails with TS2353; a JS config is silently accepted and macros never transform — the app builds and ships untranslated. Switch the project to `@vitejs/plugin-react-swc` + the SWC plugin (preferred), or pin `@vitejs/plugin-react@^5`. Don't downgrade a project that's still on v5; just don't upgrade it past 5 without switching.
+**`@vitejs/plugin-react` v6+**: the `babel` option was **removed**. A TS config fails with TS2353; a JS config is silently accepted and macros never transform — the app builds and ships untranslated. Switch the project to `@vitejs/plugin-react-swc` + the SWC plugin (preferred), or pin `@vitejs/plugin-react@^5`. A project already on `^5` stays there and works as-is; crossing to v6 later means switching to the SWC variant in the same change.
 
 `lingui()` makes `.po` files importable as compiled message modules — there is no `lingui compile` step and no compiled artifacts to gitignore on this stack. Add the type declaration once:
 
@@ -192,8 +192,10 @@ If the user wants `/es/about`-style URLs, ask them to choose: unprefixed source 
 ## Verification
 
 ```bash
-npx lingui extract --clean   # .po files update; translate targets
+npx lingui extract --clean   # .po files update
 npx tsc --noEmit             # *.po declaration + config type-check
-npm run build                # macro transform confirmed
-npm run preview              # then hard-load a deep link and switch locales
+npm run build                # macro wiring errors surface here
+npm run preview
 ```
+
+Then prove the transform ran: fill in one `msgstr` in a non-source `.po`, load `?lang=<that locale>` in `preview`, and confirm the translated string renders. English text there means the macro transform is a no-op, whatever the build said. Hard-load a deep link too (a route path typed straight into the address bar) — that is the only check that catches a missing SPA fallback.
