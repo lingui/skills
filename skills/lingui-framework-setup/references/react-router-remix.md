@@ -14,6 +14,8 @@ npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6' '@lingui/format-po@^6' 
 
 `@vitejs/plugin-react` is not in the RR7 scaffold — the `reactRouter()` plugin handles React itself but exposes no Babel hook, so the macro transform needs its own Babel-capable React plugin. The `^5` pin is deliberate: v6 removed the `babel` option this setup depends on. (Alternative: `vite-plugin-babel-macros` works too; prefer the plugin-react path because it matches Lingui's installation guide.) If the project already uses `@vitejs/plugin-react-swc`, use `@lingui/swc-plugin` (exact pin — see swc-plugin-compatibility) inside it instead.
 
+Add `@babel/types` too: it is an unmet peer of `@lingui/babel-plugin-lingui-macro` whenever that plugin is a direct dependency, and `lingui extract` crashes with `ERR_MODULE_NOT_FOUND` without it. On a Vite 8 project the `^5` pin is avoidable — keep `@vitejs/plugin-react` at v6 and run the macro as the standalone Babel pass described in [vite-spa.md](vite-spa.md), in the same plugin position as `react()` below.
+
 No `@lingui/detect-locale` — it is browser-only and throws or lies under SSR; the request itself carries the locale.
 
 ## Build tool integration

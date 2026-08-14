@@ -14,10 +14,12 @@ npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6'
 plus a macro transform picked by what's installed:
 
 - `@vitejs/plugin-react@^5` → `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option.
-- `@vitejs/plugin-react@^6` (no `babel` option) → run the macro as a standalone Babel pass: `@rolldown/plugin-babel` on Vite 8 (what the official example does) or `vite-plugin-babel` on Vite ≤ 7, with `plugins: ['@lingui/babel-plugin-lingui-macro']`.
+- `@vitejs/plugin-react@^6` (no `babel` option) → run the macro as a standalone Babel pass: `babel({ presets: [linguiTransformerBabelPreset()] })` with `@rolldown/plugin-babel` on Vite 8, or `vite-plugin-babel` with `plugins: ['@lingui/babel-plugin-lingui-macro']` on Vite ≤ 7. `linguiTransformerBabelPreset` comes from `@lingui/vite-plugin` (6.6+).
 - `@vitejs/plugin-react-swc` → `@lingui/swc-plugin`, exact-pinned (see swc-plugin-compatibility).
 
-Do **not** install `@lingui/detect-locale`: its detectors read `navigator`/`localStorage` and throw during SSR. The middleware below replaces it.
+On either Babel path, install `@babel/types` alongside `@lingui/babel-plugin-lingui-macro` — unmet peer, and `lingui extract` crashes with `ERR_MODULE_NOT_FOUND` without it.
+
+`@lingui/detect-locale` has no place here: its detectors read `navigator`/`localStorage` and throw during SSR. The middleware below resolves the locale from the request instead.
 
 ## Build tool integration
 
