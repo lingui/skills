@@ -181,6 +181,7 @@ Migration playbook for converting i18next/react-i18next projects to Lingui.
 If you prefer, you can install specific skills:
 ```bash
 npx skills add lingui/skills --skill lingui-best-practices
+npx skills add lingui/skills --skill lingui-framework-setup
 npx skills add lingui/skills --skill swc-plugin-compatibility
 npx skills add lingui/skills --skill enhanced-message-context
 npx skills add lingui/skills --skill migrate-i18next-to-lingui

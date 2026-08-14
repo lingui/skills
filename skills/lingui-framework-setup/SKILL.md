@@ -1,6 +1,6 @@
 ---
 name: lingui-framework-setup
-description: Use when adding Lingui to a Next.js App Router, Vite, React Router 7, Remix, or TanStack Start project, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, or when a working Lingui setup breaks after a framework or build-tool upgrade — including macros that silently stop being transformed.
+description: Set up Lingui in a React framework. Use when adding Lingui to a Next.js App Router, Vite, React Router 7, Remix, or TanStack Start project, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, or when a working setup breaks after a framework or build-tool upgrade.
 ---
 
 # Lingui Framework Setup
