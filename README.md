@@ -82,6 +82,26 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 - Setting up or modifying `lingui.config.js`
 - Debugging i18n issues
 
+### lingui-framework-setup
+
+Framework-native Lingui setup recipes for the five major React stacks: Next.js App Router (RSC), Vite SPA (SWC and Babel), React Router 7 framework mode, Remix v2, and TanStack Start.
+
+**What it covers:**
+
+- Detection-first setup: identify the framework, compiler (SWC vs Babel), and router before recommending anything
+- Server-side locale resolution under SSR (cookie + `Accept-Language`) and why browser detection breaks there
+- Per-request/per-locale i18n instances — avoiding cross-request locale bleed
+- The `@vitejs/plugin-react` v6 trap (removed `babel` option) and the SWC plugin pinning discipline
+- Locale-prefixed URL strategies, middleware/proxy handling (including the Next 16 rename), language switchers per stack
+- A verification sequence that proves the macro transform actually ran
+
+**Use when:**
+
+- Adding Lingui to a Next.js, Vite, React Router 7, Remix, or TanStack Start project
+- Wiring locale detection, locale-prefixed URLs, or SSR locale resolution
+- A working Lingui setup breaks after a framework upgrade
+- Macros silently stop being transformed after a build-tool change
+
 ### enhanced-message-context
 
 Add translator comments to Lingui messages so translators get the context they need. Comments describe where a message appears, what it does, and how to disambiguate it - improving translation quality without runtime cost.
