@@ -1,0 +1,33 @@
+{
+  "skill_name": "find-unwrapped-strings",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "data-module-recall",
+      "prompt": "The build is green and the visible UI is translated, but product cards and toasts still render English in the German locale. Audit this project for strings we forgot to wrap and fix what you find. Don't run npm install or builds — make the code and config changes only, and tell me exactly what you changed and what you skipped.",
+      "expected_output": "All 13 display strings in src/data/products.ts (name/tagline/description/badge) and the 3 toast messages in src/lib/notify.ts wrapped with msg descriptors and resolved at render/dispatch time; decoy fields (sku, slug, image, status, className, data-testid, console.log) left untouched; eslint-plugin-lingui added as a permanent warn-level guardrail; residuals reported explicitly.",
+      "files": ["evals/find-unwrapped-strings/files/storefront-app"],
+      "expectations": [
+        "eslint-plugin-lingui is added to devDependencies and no-unlocalized-strings is explicitly enabled at severity warn in the ESLint config — the guardrail persists after the audit",
+        "The ESLint config tunes the rule with ignores (ignoreNames/ignoreFunctions or equivalent) rather than disabling it, and the audit does not pass the rule via --rule on the CLI",
+        "All four product name values, all four tagline values, all four description values, and the 'Best seller' badge in src/data/products.ts are wrapped as msg descriptors (from @lingui/core/macro), with resolution via i18n._ or t at the consuming site — not t at module scope",
+        "The three user-facing toast strings in src/lib/notify.ts are made translatable; the console.log string and the map keys are not",
+        "Decoy values are untouched: sku, slug, image paths, status enum values, price numbers, className, and data-testid attributes are not wrapped",
+        "The final answer reports what was skipped and why (skip-list categories), not just what was wrapped — no silent residuals"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "false-positive-discipline",
+      "prompt": "Our i18n audit lint rule keeps flagging strings in this project that I'm pretty sure should NOT be translated. Review every current lingui/no-unlocalized-strings hit, wrap anything genuinely user-facing, and make the guardrail stay quiet about the rest without weakening it. Don't run npm install or builds.",
+      "expected_output": "Each hit judged against the skip-list; genuine UI strings wrapped; confirmed false positives silenced by growing the tuned ignores (ignoreNames/ignoreFunctions/specific ignore entries) from evidence — not by loosening ignore regexes speculatively, disabling the rule, or inline eslint-disable comments everywhere.",
+      "files": ["evals/find-unwrapped-strings/files/storefront-app"],
+      "expectations": [
+        "Every reported hit is dispositioned explicitly as wrapped or skipped-with-reason",
+        "False positives are handled by growing the rule's configured ignores from the confirmed cases, not by lowering severity, removing the rule, or blanket eslint-disable",
+        "No skip-list value (identifier, slug, enum, URL/path, class name, test id, console output) gets wrapped",
+        "The answer terminates the loop honestly: clean scan, zero-new-strings round, or the 2-round/40-file bound — stated explicitly with any out-of-budget residuals listed file+line"
+      ]
+    }
+  ]
+}

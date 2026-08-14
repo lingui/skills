@@ -1,0 +1,30 @@
+{
+  "name": "storefront",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "lingui compile && vite",
+    "build": "lingui compile && tsc -b && vite build",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lingui:extract": "lingui extract",
+    "lingui:compile": "lingui compile"
+  },
+  "dependencies": {
+    "@lingui/core": "^6.0.0",
+    "@lingui/react": "^6.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^6.0.0",
+    "@lingui/swc-plugin": "6.0.0",
+    "@lingui/vite-plugin": "^6.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react-swc": "^4.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "~5.8.0",
+    "vite": "^7.0.0"
+  }
+}
