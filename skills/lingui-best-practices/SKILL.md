@@ -424,7 +424,8 @@ export const getDirection = (locale: string): "ltr" | "rtl" =>
 export const localeDisplayName = (locale: string) =>
   new Intl.DisplayNames([locale], { type: "language" }).of(locale) ?? locale;
 
-export function resolveLocale(candidate: string | undefined): Locale {
+// `null` is in the signature on purpose: detect() and headers.get() both return it
+export function resolveLocale(candidate: string | null | undefined): Locale {
   if (!candidate) return sourceLocale;
   if ((locales as readonly string[]).includes(candidate)) return candidate as Locale;
   const base = candidate.split("-")[0]; // es-MX → es
