@@ -5,7 +5,7 @@ description: Add translator comments to Lingui messages so translations are accu
 
 # Enhanced Message Context
 
-When implementing Lingui i18n, add translator comments to messages so translators have context to provide the best translation. Even when the message text is self-explanatory, it is important to know where and how it appears in the UI to choose the correct tone, length, and wording.
+When implementing Lingui i18n, add translator comments to the messages that need them, so translators have the context to choose the right tone, length, and wording. Which messages need them is the whole question, and the tiers below answer it: a short label carries almost no context of its own and a full sentence carries most of it, so they earn very different treatment.
 
 ## Know the App Domain First
 
@@ -35,7 +35,56 @@ Prioritize in tiers:
 - **Sentence fragments**: text completed by surrounding UI ("per month", "of 24")
 - **Labels isolated from surroundings**: table column headers, tooltips, menu items
 
-**Lower priority — but still valuable**: full, self-explanatory sentences. A brief location comment ("Validation hint below the password field") still helps translators choose tone and length. Plural branches don't need separate comments — one comment on the whole message covers all forms.
+**Ship uncommented** — the message already carries its own context:
+
+- **Full, self-explanatory sentences.** "We couldn't reach the server. Check your connection and try again." tells a translator everything a location note would. Comment one only where tone or length is genuinely constrained — a 40-character table cell, a legal phrase with a required register.
+- **Strings whose comment would only restate the text or its file path.** "Feature card body text on the features page" attached to a three-sentence paragraph is cost without information.
+
+Plural branches don't need separate comments — one comment on the whole message covers all forms.
+
+### Aim for coverage, not saturation
+
+A catalog where nearly every message carries a comment is evidence the tiers were skipped, not evidence of quality. **The must-comment tier at 100% is the target; the whole catalog at 100% is not.**
+
+Two costs make that real, and both fall on people rather than tooling: comments on everything train translators to skim past comments, so the load-bearing ones stop being read; and every comment is a claim about the UI that rots when the UI moves.
+
+When auditing an existing catalog, measure the must-comment tier specifically rather than overall `#.` coverage — short messages with no comment are the finding, and a headline percentage hides them. This lists every uncommented entry with its `#:` reference, which is enough to sort by tier at a glance:
+
+```bash
+awk -v RS='' '/msgid "[^"]/ && !/#\./' src/locales/en/messages.po
+```
+
+Paragraph mode (`RS=''`) matches against the whole entry, so leave the patterns unanchored — `^msgid` only fires on entries that begin with `msgid`, and most begin with a `#:` reference line.
+
+## `t` tagged templates cannot carry a comment
+
+This is the single most common way a wrapping pass ends up with no context: the tagged-template form has nowhere to put one.
+
+```jsx
+// ❌ No comment possible — there is no argument to attach one to
+<img alt={t`Company logo`} />
+
+// ✅ Object form takes `comment`
+<img alt={t({ comment: "Alt text for the logo in the site header", message: "Company logo" })} />
+```
+
+The same applies to `` msg`…` `` versus `msg({ … })`, and to `` plural(count, { … }) `` used bare.
+
+**Decide the comment while wrapping, not afterwards.** For anything in the must-comment tier, reach for the object form the first time. The tagged-template form is the natural thing to type, so leaving it until later turns one decision into a mechanical edit across every attribute, placeholder, and toast in the codebase.
+
+`Trans` has no such limitation: `comment` is just a prop, so JSX content can always be commented in place.
+
+```jsx
+<Trans comment="Button in the toolbar that returns to the previous page">Back</Trans>
+```
+
+## Leave vendored component libraries alone
+
+Copy inside `components/ui/**` — shadcn/ui, or any generator-vendored Radix wrapper — is not yours to comment or wrap. `shadcn add` overwrites those files wholesale, so a macro or a comment added there disappears on the next update, silently and with a green build.
+
+That governs this skill's audit pass too: when a catalog entry's `#:` reference points into a vendored directory, record it as a known residual and move to the next entry — the file itself stays closed.
+
+If that copy genuinely needs translating, the fix is a project-owned wrapper component that holds the strings and delegates presentation to the primitive — a deliberate design decision for the project, not something a context pass introduces.
 
 ## Writing Effective Comments
 
@@ -251,8 +300,8 @@ When implementing or reviewing Lingui messages:
 2. **Read the message**: Look at the string itself
 3. **Check context**: Consider where and how it's used in the code
 4. **Ask**: "Could a translator misinterpret this without seeing the UI?"
-5. **If yes**: Add a `comment` field with location, purpose, and any disambiguation
-6. **If no**: A brief location comment still helps tone and length — keep it short
+5. **If yes**: reach for the object form (`t({ comment, message })`, `Trans comment=…`) *at the moment you wrap*, and give it location, purpose, and any disambiguation
+6. **If no**: leave it uncommented and move on. A self-explanatory sentence does not need a location note, and adding one costs more than it returns
 
 ## Post-Extraction Review Pass
 
@@ -260,8 +309,11 @@ After a batch of i18n work, audit the catalog instead of trusting that comments 
 
 1. Run `lingui extract`
 2. Scan the source-locale `.po` file for entries with **no `#.` line** (that's where `comment` lands)
-3. For each uncommented entry, apply the tiers above: if it's a "must comment" case (short/ambiguous, unclear placeholder, domain term), go back to the source and add the comment
-4. Re-run `lingui extract` and confirm the `#.` lines appear
+3. **Triage by tier — do not treat every uncommented entry as a defect.** Short or ambiguous strings, unclear placeholders and domain terms go back to the source and get a comment. Full self-explanatory sentences are a correct outcome, not a gap
+4. **Skip entries whose `#:` reference points into a vendored directory** (`components/ui/**`) and record them as known residuals
+5. Re-run `lingui extract` and confirm the `#.` lines appear
+
+Report the result as the must-comment tier's coverage plus what you deliberately left alone — "every short label commented, 120 self-explanatory sentences left as-is, 25 vendored residuals" — rather than a single catalog-wide percentage, which cannot distinguish those three.
 
 ```po
 #. Button in the toolbar that navigates to the previous page
@@ -273,6 +325,6 @@ msgstr ""
 ## Notes
 
 - Comments are extracted into message catalogs for translators
-- Comments are stripped from production builds (zero runtime cost)
+- Comments are stripped from production builds — zero *runtime* cost, which is not the same as zero cost: the cost is a translator's attention and a maintainer's upkeep, and that is what the tiers ration
 - Comments appear in translation management systems (TMS)
 - Use consistent terminology across all comments in your project

@@ -23,6 +23,8 @@ On either Babel path, install `@babel/types` alongside `@lingui/babel-plugin-lin
 
 ## Build tool integration
 
+**`@vitejs/plugin-react` `^5`** — the macro rides inside the React plugin:
+
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
@@ -34,15 +36,35 @@ export default defineConfig({
   plugins: [
     lingui(),           // compiles .po imports on the fly — no `lingui compile` step
     tanstackStart(),
-    // macro pass here if using a standalone Babel plugin (plugin-react v6 path)
     viteReact({
-      babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] }, // plugin-react ^5 path
+      babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] },
     }),
   ],
 })
 ```
 
-The one hard ordering rule comes from the Start docs: **`viteReact()` must come after `tanstackStart()`** — reversed, Start's code splitting and server/client boundary handling break. Add the `*.po` module declaration from [vite-spa.md](vite-spa.md).
+**`@vitejs/plugin-react` `^6`+ on Vite 8** — the `babel` option is gone, so the macro runs as its own pass **after** `viteReact()`:
+
+```ts
+import babel from '@rolldown/plugin-babel'
+import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    lingui(),
+    tanstackStart(),
+    viteReact(),
+    babel({ presets: [linguiTransformerBabelPreset()] }),
+  ],
+})
+```
+
+Ordering rules, both of which produce silent failures rather than errors:
+
+- **`viteReact()` must come after `tanstackStart()`** (from the Start docs) — reversed, Start's code splitting and server/client boundary handling break.
+- **The standalone macro pass goes last, after `viteReact()`.** It transforms the macro calls; running it ahead of the React plugin leaves nothing reliable for it to match on.
+
+Add the `*.po` module declaration from [vite-spa.md](vite-spa.md).
 
 `lingui.config.ts` is the standard single-catalog shape (`src/locales/{locale}/messages`, `include: ['src']`) — see [vite-spa.md](vite-spa.md); build the shared `src/i18n/locales.ts` module first (lingui-best-practices).
 
@@ -106,7 +128,16 @@ export const startInstance = createStart(() => ({
 }))
 ```
 
-If `src/start.ts` already registers middleware, merge into the existing array. **Verify the server entry actually imports `./start`** (even as a side-effect import) — an unreferenced `startInstance` gets tree-shaken and the middleware silently never runs.
+If `src/start.ts` already registers middleware, merge into the existing array.
+
+**Current versions auto-discover this file.** Start resolves `<srcDirectory>/start.ts` as a first-class entry and falls back to a stub that exports `startInstance = undefined`, so exporting `startInstance` is enough — no import from the server entry is needed. Confirm it for the installed version before adding one:
+
+```bash
+# Should list `start` alongside the client/server/router entries
+grep -r 'defaultEntry: "start"' node_modules/@tanstack/start-plugin-core/dist
+```
+
+On versions without that resolution, an unreferenced `startInstance` is tree-shaken and the middleware silently never runs — there, import `./start` from the server entry (a side-effect import is enough).
 
 ## Router wiring: provider + dehydrate/hydrate
 
@@ -125,7 +156,12 @@ export interface AppContext {
 }
 
 export function getRouter() {
-  const i18n = getGlobalStartContext()?.i18n ?? setupI18n() // server: per-request; client: fresh
+  // server: per-request; client: fresh.
+  // The cast is load-bearing on current versions — see the note below.
+  const globalContext = getGlobalStartContext() as
+    | Partial<{ locale: string; i18n: I18n }>
+    | undefined
+  const i18n = globalContext?.i18n ?? setupI18n()
 
   const router = createTanStackRouter({
     routeTree,
@@ -146,6 +182,8 @@ export function getRouter() {
   return router
 }
 ```
+
+**Why `getGlobalStartContext()` needs a cast.** Its signature resolves the request-middleware context with the middleware list pinned to `[]`, so the return type collapses to `never` — `getGlobalStartContext()?.i18n` is then a type error (`Property 'i18n' does not exist on type 'never'`) no matter what `Register` declares. Registering the start instance is still worth doing — it types middleware context for server functions — but it does not fix this call site, and `tsr generate` already writes that registration into `routeTree.gen.ts` once `src/start.ts` exists. Read that file rather than hand-writing a `Register` augmentation. Keep the cast narrow and commented: if a future version widens the signature, it is the one line to delete.
 
 The root route reads the instance for the document shell:
 
@@ -236,7 +274,8 @@ The recipe above is cookie-only. For `/$locale/`-prefixed routes: mount routes u
 
 ## Gotchas
 
-- **Middleware never runs** (always source locale): the server entry doesn't import `src/start.ts`, so it was tree-shaken.
+- **Middleware never runs** (always source locale): check the filename and location first — Start auto-discovers `<srcDirectory>/start.ts` by exact name, so `src/start.tsx`, `src/app/start.ts`, or a differently-named file is simply never loaded. On older versions without that resolution, an unreferenced `startInstance` is tree-shaken instead; there, import `./start` from the server entry.
+- **Build green, UI in the source language, no errors**: the macro transform isn't wired. On `@vitejs/plugin-react@6` this is usually a `babel` option that was silently ignored, or a standalone macro pass placed before `viteReact()` instead of after it.
 - **`localStorage is not defined` / `navigator is not defined` during SSR**: `@lingui/detect-locale` got installed (often copied from a SPA guide) — uninstall it; the middleware replaces it.
 - **Hydration mismatch on `<html>`**: client code mutates `document.documentElement` — remove the mutation, the server owns those attributes.
 - **Language reverts after navigating**: the switcher swapped catalogs client-side without committing the cookie — commit via the server function + full navigation.

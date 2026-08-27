@@ -67,6 +67,10 @@ Work through these questions in order:
 4. **Is it defined outside a component** (module scope, constants, config)? → `msg` descriptor, resolved with `t(descriptor)` or `_(descriptor)` at render time
 5. **Is it in non-React code?** → `t` from `@lingui/core/macro`
 
+If the string needs a translator comment, take the **object** form of whichever macro the tree picks — `` t`…` `` and `` msg`…` `` have nowhere to attach one. Deciding that while you wrap costs nothing; converting a whole codebase afterwards does not. See the enhanced-message-context skill.
+
+Some destinations expect a plain string and will not take a macro at all — a Zod message, a count inside an `aria-label`, a server function's return value, an `Intl` formatter. Those have their own recipes: [integration-recipes.md](references/integration-recipes.md).
+
 ### Use Trans for JSX Content
 
 The `Trans` macro is the primary way to translate JSX:
@@ -115,6 +119,16 @@ function MyComponent() {
 
 **When to use**: Element attributes, alerts, function parameters, any non-JSX string.
 
+The macro hook returns **`i18n` as well as `t`**, and both are bound to the React context — so one hook covers reading the active locale, formatting against it, and subscribing the component to locale changes. One import covers it — the runtime `useLingui` from `@lingui/react` is for code that has no macro transform:
+
+```jsx
+import { useLingui } from "@lingui/react/macro";
+
+const { t, i18n } = useLingui();
+i18n.locale;                       // "de-DE" — the active locale
+new Intl.NumberFormat(i18n.locale) // format against it
+```
+
 ### Use msg for Lazy Translations
 
 When you need to define messages at module level or in arrays/objects:
@@ -140,6 +154,22 @@ function StatusList() {
 ```
 
 **When to use**: Module-level constants, arrays of messages, conditional message selection.
+
+#### Descriptors change the field's type
+
+`msg` turns a `string` field into a `MessageDescriptor`, so TypeScript points at every consuming site — which is what makes this conversion safe to apply in bulk. Two things get through it:
+
+**React keys keep compiling.** `key={item.label}` becomes an object key, which React stringifies to `[object Object]` — identical for every row, so reconciliation degrades and the only signal is a console warning. Key on an identifier, never on the copy:
+
+```jsx
+// ❌ compiles; every key is now identical
+{NAV.map((item) => <li key={item.label}>{t(item.label)}</li>)}
+
+// ✅
+{NAV.map((item) => <li key={item.to}>{t(item.label)}</li>)}
+```
+
+**String methods become type errors with a tempting wrong fix.** `LABELS[k].toLowerCase()` fails to compile — correctly — but `t(LABELS[k]).toLowerCase()` is not the repair. Lower-casing a translation breaks languages that capitalise by rule (German nouns) and is a no-op in scripts without case. If a lower-case variant is really needed, it is a second message with its own comment.
 
 ## Pluralization
 
@@ -504,3 +534,5 @@ If you encounter issues:
 4. **Type errors**: Run `lingui compile --typescript` for TypeScript projects
 
 For detailed common mistakes and pitfalls, see [common-mistakes.md](references/common-mistakes.md).
+
+For the seams where Lingui meets a library that wants a plain string — validation schemas, plurals inside attributes, `i18n._()` with values, server-composed messages, `Intl` formatters — see [integration-recipes.md](references/integration-recipes.md). Each of those has a version that compiles, ships, and is wrong; the recipes lead with the trap.
