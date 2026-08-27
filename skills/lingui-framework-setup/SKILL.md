@@ -28,7 +28,8 @@ Compiler detection (decides which macro-transform package to install):
 |---|---|---|
 | `@vitejs/plugin-react-swc` | SWC | `@lingui/swc-plugin` (pin exactly — see the swc-plugin-compatibility skill) |
 | `@vitejs/plugin-react` `^5` or lower | Babel | `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option |
-| `@vitejs/plugin-react` `^6`+ | Babel plugin unusable | v6 removed the `babel` option — switch to the SWC variant (see swc-plugin-compatibility) |
+| `@vitejs/plugin-react` `^6`+, Vite 8 | Babel, standalone pass | v6 removed the `babel` option — run the macro as its own pass: `@rolldown/plugin-babel` + `linguiTransformerBabelPreset()`. Keeps the stock React plugin |
+| `@vitejs/plugin-react` `^6`+, Vite ≤ 7 | Babel, standalone pass | Same, via `vite-plugin-babel` (no Rolldown). Switching to `@vitejs/plugin-react-swc` also works, at the cost of an exact pin |
 | Next.js, no `.babelrc` | SWC | `@lingui/swc-plugin` via `experimental.swcPlugins` |
 | Next.js with `.babelrc` | Babel | `@lingui/babel-plugin-lingui-macro` in `.babelrc` (a Babel config disables Next's SWC) |
 
