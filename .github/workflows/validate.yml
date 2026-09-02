@@ -1,0 +1,36 @@
+name: Validate plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate manifests and skills
+    runs-on: ubuntu-latest
+    env:
+      CI: "1"
+      DISABLE_AUTOUPDATER: "1"
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      # Every commit to main is a new plugin version (no `version` field, so the
+      # commit SHA is the version), so main must always be loadable. Validate
+      # with the current Claude Code, the one users actually run.
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@latest
+
+      - name: Validate marketplace and plugin manifests
+        run: claude plugin validate .
+
+      - name: Validate skills (strict)
+        run: claude plugin validate skills --strict

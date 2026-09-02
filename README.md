@@ -25,7 +25,14 @@ Alternatively, install the skills as a [Claude Code plugin](https://code.claude.
 /plugin install lingui@lingui-skills
 ```
 
-All skills load automatically and stay up to date via `/plugin marketplace update`.
+All skills load automatically. Every commit to `main` is a new plugin version, so newly added skills reach you as soon as the plugin updates. Turn on auto-update once (run `/plugin`, open the **Marketplaces** tab, select `lingui-skills`, choose **Enable auto-update**), or update by hand:
+
+```
+/plugin update lingui@lingui-skills
+/reload-plugins
+```
+
+Where the `/plugin` panel is not available, such as in IDE extensions, run `claude plugin update lingui@lingui-skills` in a terminal instead. A running session keeps the version it started with, so new skills appear after `/reload-plugins` or a restart. Note that `/plugin marketplace update` only refreshes the catalog and does not update the installed plugin.
 
 ### Other Agent Tools (Plugin Install)
 
