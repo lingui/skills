@@ -11,9 +11,9 @@ npm install '@lingui/core@^6' '@lingui/react@^6'
 npm install -D '@lingui/cli@^6' '@lingui/swc-plugin@<exact version>'
 ```
 
-`@lingui/swc-plugin` must be **pinned to an exact version** matched to the project's Next.js version (look it up at https://plugins.swc.rs, runtime `next`). The SWC plugin ABI does not follow semver — a caret range breaks on the next `npm update`. Diagnosis of mismatch crashes lives in the **swc-plugin-compatibility** skill.
+`@lingui/swc-plugin` must be **pinned to an exact version** chosen for the Next.js version the lockfile resolved — the **swc-plugin-compatibility** skill has the selection steps (host version → `swc_core` range → newest plugin in range whose peer admits the installed `@lingui/core`). A caret range resolves to the newest plugin, which is regularly built against a newer `swc_core` than Next's bundled SWC accepts, so `^` is a build break waiting for the next `npm update`. If no plugin that installs beside `@lingui/core@6` fits this Next.js version, upgrade Next.js or take the Babel path below; older plugin majors peer on older `@lingui/core` majors and will not install.
 
-If the project has a `.babelrc`, Next.js silently disables its SWC compiler entirely — use `@lingui/babel-plugin-lingui-macro` in that Babel config instead of the SWC plugin, and know that the project has already paid the slower-build cost.
+If the project has a `.babelrc`, Next.js silently disables its SWC compiler entirely — use `@lingui/babel-plugin-lingui-macro` in that Babel config instead of the SWC plugin (plus `babel-plugin-macros` and an explicit `@babel/types`), and know that the project has already paid the slower-build cost.
 
 Do **not** install `@lingui/loader` — it is a webpack loader, and Turbopack is the default bundler in Next 15/16, so a loader-based catalog pipeline silently never runs. Compiled catalogs (below) work under both bundlers.
 
@@ -310,7 +310,7 @@ Lingui fully supports the Pages Router — the official `nextjs-swc` example shi
 
 ## Gotchas
 
-- Build crashes with `failed to run Wasm plugin transform` / `out of bounds memory access` → SWC plugin/runtime version mismatch; fix per the swc-plugin-compatibility skill, don't touch app code.
+- Build crashes with `Failed to execute SWC plugin` / `failed to run Wasm plugin transform` / `Failed to deserialize program received from host` → SWC plugin/host version mismatch, usually a caret range that resolved to a plugin newer than Next's bundled SWC; fix per the swc-plugin-compatibility skill, don't touch app code.
 - `<Trans>` renders raw source text with a green build → transform not running: bare-string plugin entry, or a `.babelrc` turned SWC off while the SWC plugin is configured.
 - `global-error.tsx` replaces the root layout entirely — no provider exists there; keep it hardcoded in the source language.
 - Statically rendered pages evaluate module scope once at build time — a module-level `t\`...\`` bakes one locale into every page; use `msg` descriptors resolved at render (see lingui-best-practices).

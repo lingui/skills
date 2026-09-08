@@ -15,7 +15,7 @@ plus a macro transform picked by what's installed:
 
 - `@vitejs/plugin-react@^5` → `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option.
 - `@vitejs/plugin-react@^6` (no `babel` option) → run the macro as a standalone Babel pass: `babel({ presets: [linguiTransformerBabelPreset()] })` with `@rolldown/plugin-babel` on Vite 8, or `vite-plugin-babel` with `plugins: ['@lingui/babel-plugin-lingui-macro']` on Vite ≤ 7. `linguiTransformerBabelPreset` comes from `@lingui/vite-plugin` (6.6+).
-- `@vitejs/plugin-react-swc` → `@lingui/swc-plugin`, exact-pinned (see swc-plugin-compatibility).
+- `@vitejs/plugin-react-swc` → `@lingui/swc-plugin`, exact-pinned to the `@swc/core` the lockfile resolved (see swc-plugin-compatibility).
 
 On either Babel path, install `@babel/types` alongside `@lingui/babel-plugin-lingui-macro` — unmet peer, and `lingui extract` crashes with `ERR_MODULE_NOT_FOUND` without it.
 
