@@ -32,7 +32,7 @@ export default defineConfig({
 })
 ```
 
-Install `@lingui/swc-plugin` **pinned to an exact version** compatible with the installed `@vitejs/plugin-react-swc` (https://plugins.swc.rs) — the plugin ABI doesn't follow semver. `linguiMacroSwcPlugin()` is the current helper; the raw tuple form `plugins: [['@lingui/swc-plugin', {}]]` is equivalent. Either way it must be a tuple/helper call, never a bare string — a bare string is silently ignored. Details: the swc-plugin-compatibility skill.
+Install `@lingui/swc-plugin` **pinned to an exact version** compatible with the `@swc/core` the lockfile resolved for `@vitejs/plugin-react-swc` (`npm ls @swc/core`, not the caret range the plugin declares) — the plugin ABI doesn't follow semver, and the swc-plugin-compatibility skill has the selection steps. A Vite host and a Next.js host in the same repo can need different plugin versions. `linguiMacroSwcPlugin()` is the current helper; the raw tuple form `plugins: [['@lingui/swc-plugin', {}]]` is equivalent. Either way it must be a tuple/helper call, never a bare string — a bare string is silently ignored. Details: the swc-plugin-compatibility skill.
 
 **`@vitejs/plugin-react` v5 or lower** (Babel):
 

@@ -137,6 +137,8 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 
 - `failed to invoke plugin on 'Some("...")'`
 - `failed to run Wasm plugin transform`
+- `Failed to deserialize program received from host`
+- `Failed to execute SWC plugin` (Next.js 16 / Turbopack)
 - `RuntimeError: out of bounds memory access`
 - `LayoutError called Result::unwrap()`
 - A successful build where macros are silently not transformed
@@ -144,8 +146,8 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 **What it covers:**
 
 - Why SWC plugin compatibility errors happen
-- How to find compatible plugin versions
-- Version pinning strategies
+- How to choose a compatible plugin version: host version → `swc_core` range → peer check
+- Version pinning strategies and the peer-dependency trap (plugin majors require matching `@lingui/core` majors)
 - The plugin tuple-shape trap that silently disables macros
 - Alternative solutions (Babel plugin) and the `@vitejs/plugin-react@6` caveat
 
