@@ -56,7 +56,7 @@ awk -v RS='' '/msgid "[^"]/ && !/#\./' src/locales/en/messages.po
 
 Paragraph mode (`RS=''`) matches against the whole entry, so leave the patterns unanchored — `^msgid` only fires on entries that begin with `msgid`, and most begin with a `#:` reference line.
 
-## `t` tagged templates cannot carry a comment
+## `t` tagged templates cannot carry a comment of their own
 
 This is the single most common way a wrapping pass ends up with no context: the tagged-template form has nowhere to put one.
 
@@ -77,6 +77,21 @@ The same applies to `` msg`…` `` versus `msg({ … })`, and to `` plural(count
 ```jsx
 <Trans comment="Button in the toolbar that returns to the previous page">Back</Trans>
 ```
+
+### The directive escape hatch
+
+A [`lingui-set` directive](https://lingui.dev/ref/macro#lingui-directive) sets `comment` for every macro that follows it in the file, tagged templates included. It is the only way to give `` t`…` `` a comment without rewriting it:
+
+```jsx
+// lingui-set comment="Alt text for the logos in the site header"
+<img alt={t`Company logo`} />
+<img alt={t`Partner logo`} />
+// lingui-reset
+```
+
+Reach for it only when a block of messages genuinely shares one description — a toolbar, a table, an empty state. A directive spanning a file of unrelated strings attaches the same words to all of them, which is the saturation the tiers exist to prevent rather than a shortcut around the object form.
+
+Close it with `lingui-reset`. An open directive keeps applying to messages added to the file later, so its comment ends up describing strings nobody wrote it for, and it changes the IDs extracted for any of them that also inherit a `context`.
 
 ## Leave vendored component libraries alone
 
@@ -314,6 +329,19 @@ After a batch of i18n work, audit the catalog instead of trusting that comments 
 5. Re-run `lingui extract` and confirm the `#.` lines appear
 
 Report the result as the must-comment tier's coverage plus what you deliberately left alone — "every short label commented, 120 self-explanatory sentences left as-is, 25 vendored residuals" — rather than a single catalog-wide percentage, which cannot distinguish those three.
+
+### Enforcing it with ESLint
+
+[`eslint-plugin-lingui`](https://github.com/lingui/eslint-plugin) 0.16 and later ships a [`require-comment`](https://github.com/lingui/eslint-plugin/blob/main/docs/rules/require-comment.md) rule that reports messages with no description, at the source and with a file and line, rather than after extraction. A blank comment is reported too.
+
+The rule is off by default and, as configured out of the box, requires a comment on **every** message — which is exactly the saturation the tiers argue against. Turning it on globally is not the goal. Two ways it does fit:
+
+- **As the audit pass, temporarily.** Enable it at `warn` over a directory to enumerate what is uncommented, triage by tier, then turn it off. Replaces the `awk` scan above and runs before `lingui extract`.
+- **Scoped to directories where the must-comment tier is dense** — toolbars, table and column definitions, icon-button labels, empty states. There, "every message" and "every message that needs one" are nearly the same set, so a permanent ESLint `overrides` entry costs little.
+
+Two options matter for this skill's advice: `allowContext: true` accepts a `context` in place of a `comment`, and `ignorePatterns` strips metadata tags such as `[CHAR_LIMIT=40]` so that a comment carrying only metadata is still reported as missing a description.
+
+A `lingui-set comment="…"` directive satisfies the rule for the messages it covers. If directives are used that way, enable [`require-directive-reset`](https://github.com/lingui/eslint-plugin/blob/main/docs/rules/require-directive-reset.md) alongside it, which reports a `lingui-set` that is never closed.
 
 ```po
 #. Button in the toolbar that navigates to the previous page

@@ -120,6 +120,7 @@ Add translator comments to Lingui messages so translators get the context they n
 - How to write effective comments (location, action/purpose, disambiguation, under ~80 chars)
 - `comment` vs `context` — and why `context` must not be used for namespacing
 - A post-extraction review pass to catch uncommented `.po` entries
+- Enforcing comments with the `require-comment` ESLint rule, scoped so it does not force a comment on every message
 - API usage for `t`, `Trans`, and `defineMessage` with comments
 
 **Use when:**
