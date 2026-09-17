@@ -30,6 +30,23 @@
         "'wrong' in the quiz gets treatment consistent with the graded-answer 'right' (context or comment referencing the quiz result)",
         "The explanation distinguishes comment (translator hint, same catalog entry) from context (changes message identity, separate entries)"
       ]
+    },
+    {
+      "id": 3,
+      "eval_name": "directive-scope-and-tagged-templates",
+      "prompt": "We're sending this app for translation next week. Go through src/components and make sure every message that needs translator context has it, and that the context each message gets is actually about that message. Code changes only.",
+      "expected_output": "The unclosed lingui-set directive in ConversationHeader.tsx is scoped to the action buttons it describes, the status labels get their own context instead of inheriting it, and the tagged templates in EmptyState.tsx end up with comments while the self-explanatory sentence is left alone.",
+      "files": ["evals/enhanced-message-context/files/support-inbox"],
+      "expectations": [
+        "The existing `lingui-set comment=\"Action buttons in the header of a conversation\"` in ConversationHeader.tsx is closed with `lingui-reset` (or replaced by per-message comments) so it stops applying past the action array",
+        "The Resolved and Open status labels do not end up carrying the action-buttons comment; they get their own context describing them as the state of a conversation",
+        "The Close action label is disambiguated as the verb (closing or resolving a conversation), not the adjective or the proximity sense — either by its own comment or by a directive comment specific enough to carry it",
+        "The `Empty inbox` alt text and the `New` button label get comments, via the `t({ comment, message })` object form or a `lingui-set` block covering them — a tagged template left bare is a miss",
+        "`New` is disambiguated as starting a new conversation rather than read as an adjective",
+        "Any `lingui-set` directive introduced by the agent is closed with `lingui-reset` rather than left open to the end of the file",
+        "The \"You're all caught up...\" sentence is left uncommented or given at most a brief location note — it carries its own context and is not a must-comment message",
+        "`context` is not introduced for any of these messages; none of them is a case of the same text needing separate catalog entries"
+      ]
     }
   ]
 }
