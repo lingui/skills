@@ -76,7 +76,7 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 - Naming placeholders with `ph()` instead of positional `{0}`
 - Date and number formatting
 - Message extraction and compilation workflow
-- Catalog hygiene: build-script integration, gitignore rules, CI drift check
+- Catalog hygiene: build-script integration, gitignore rules, CI checks with `lingui check sync` / `lingui check missing`
 - Single-sourced locale metadata (direction, display names, fallback resolution)
 - Configuration patterns and Lingui 6 upgrade notes (ESM-only, Node ≥ 22.19)
 - Common mistakes and how to avoid them
