@@ -89,6 +89,8 @@ fallbackLocales: {
 }
 ```
 
+Fallbacks also define what "missing" means to the CLI: `lingui compile --strict` and `lingui check missing` (Lingui 6.8+) count a translation as missing only when no fallback locale provides one either. `lingui check missing --mode catalog` ignores fallbacks and reports every untranslated entry in each target catalog.
+
 ### Compilation Format
 
 Control the output format of compiled catalogs:

@@ -449,6 +449,6 @@ import { Text } from "react-native";
 5. ❌ Missing `I18nProvider` → Wrap your app
 6. ❌ Loading uncompiled catalogs → Run `lingui compile`
 7. ❌ Wrong imports in v5 → Use `@lingui/core/macro` and `@lingui/react/macro`
-8. ❌ Forgetting extraction → Run `lingui extract` regularly
+8. ❌ Forgetting extraction → Run `lingui extract` regularly and gate PRs with `lingui check sync` (Lingui 6.8+)
 
 Following these practices will help you avoid the most common Lingui pitfalls.
