@@ -92,3 +92,5 @@ npx lingui compile --typescript   # for TypeScript projects
 ```
 
 A successful migration shows `Missing: 0` for each locale.
+
+To list the entries behind a non-zero count: `npx lingui check missing --mode catalog --verbose` (Lingui 6.8+).

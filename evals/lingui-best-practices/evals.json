@@ -28,7 +28,7 @@
         "No prebuild or predev lifecycle hook is used for compilation",
         ".gitignore ignores the compiled catalogs by extension or filename (e.g. src/locales/**/messages.ts), not by ignoring the locales directory",
         "The .po files are NOT matched by any new gitignore rule",
-        "A CI-usable drift check exists: a script (or workflow) that runs lingui compile and lingui extract --clean and fails when git diff shows catalog changes",
+        "A CI-usable drift check exists: a script (or workflow) that runs lingui check sync (Lingui 6.8+), or on older Lingui runs lingui compile and lingui extract --clean and fails when git diff shows catalog changes",
         "The answer addresses untracking the already-committed compiled catalogs (git rm --cached) — mentioned or performed"
       ]
     }
