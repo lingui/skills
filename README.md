@@ -1,5 +1,7 @@
 # Lingui Skills
 
+[![skills.sh](https://skills.sh/b/lingui/skills)](https://skills.sh/lingui/skills)
+
 This repository contains Agent Skills for [Lingui](https://lingui.dev), a lightweight internationalization (i18n) framework for JavaScript and TypeScript.
 
 ## What are Agent Skills?
