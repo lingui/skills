@@ -59,6 +59,8 @@ function App() {
 
 ### Choosing the Right Macro
 
+The tree assumes a macro transform runs at build time (Babel, SWC or the Vite plugin). Code that runs with **no build step** — a Node.js script, a serverless function, a test runner — takes the runtime macro instead: see [integration-recipes.md](references/integration-recipes.md#code-with-no-build-step-the-runtime-macro).
+
 Work through these questions in order:
 
 1. **Does the message depend on a count?** → `Plural` (JSX) or `plural` (strings). Never wrap a count-dependent string in plain `Trans` — that bakes English plural rules into the message.
@@ -504,6 +506,25 @@ function App() {
 }
 ```
 
+### App-wide Values in Messages
+
+A value that appears in many messages — the product name, a support address, the app version — goes in as a placeholder, so a rename changes one value and every message keeps its id and translation. Since Lingui 6.10, register it once on the instance and write the placeholder bare in the message:
+
+```jsx
+// once, at startup — or setupI18n({ variables }) when you create the instance
+i18n.setVariables({ appName: "Acme Notes" });
+
+// in a component
+const { t } = useLingui();
+t`Questions about {appName}? Ask in the help center.`;
+<Trans>Welcome to {"{appName}"}</Trans>; // the string literal keeps the braces as a placeholder
+```
+
+- A value passed at the call site wins; `undefined` and `null` fall through to the default.
+- An unset or misspelled name renders as an empty string, with no warning — set the defaults before the first render.
+- A function default (`() => user.plan`) is read on every render, but a change behind it triggers no re-render. `i18n.setVariable(name, value)` and `setVariables` emit `change`, so `I18nProvider` re-renders.
+- Translators see the bare `{appName}`: add a comment saying what it holds (enhanced-message-context).
+
 ### Memoization with useLingui
 
 When using memoization, use the `t` function from the macro version:
@@ -536,4 +557,4 @@ If you encounter issues:
 
 For detailed common mistakes and pitfalls, see [common-mistakes.md](references/common-mistakes.md).
 
-For the seams where Lingui meets a library that wants a plain string — validation schemas, plurals inside attributes, `i18n._()` with values, server-composed messages, `Intl` formatters — see [integration-recipes.md](references/integration-recipes.md). Each of those has a version that compiles, ships, and is wrong; the recipes lead with the trap.
+For the seams where Lingui meets a library that wants a plain string — validation schemas, plurals inside attributes, `i18n._()` with values, server-composed messages, `Intl` formatters — and for code with no build step, see [integration-recipes.md](references/integration-recipes.md). Each of those has a version that compiles, ships, and is wrong; the recipes lead with the trap.

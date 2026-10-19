@@ -76,6 +76,8 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 - Using `useLingui()` for non-JSX translations
 - Pluralization with `Plural` component
 - Naming placeholders with `ph()` instead of positional `{0}`
+- App-wide placeholder values (product name, version) with default variables (`i18n.setVariables`, Lingui 6.10+)
+- Code with no build step (Node.js scripts, serverless functions, test runners) via the experimental runtime macro (`@lingui/core/runtime-macro`, Lingui 6.10+)
 - Date and number formatting
 - Message extraction and compilation workflow
 - Catalog hygiene: build-script integration, gitignore rules, CI checks with `lingui check sync` / `lingui check missing`
