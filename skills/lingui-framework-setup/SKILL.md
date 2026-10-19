@@ -22,10 +22,11 @@ Read `package.json` and the build config before recommending anything. Never gue
 | `@remix-run/dev` ≥ 2.7 in devDeps + `vite` | Remix v2 (Vite build, SSR) | [react-router-remix.md](references/react-router-remix.md) |
 | `vite` + `react`, none of the above | Vite SPA (incl. declarative React Router, TanStack Router) | [vite-spa.md](references/vite-spa.md) |
 
-Compiler detection (decides which macro-transform package to install):
+Macro transform (decides what to install). On every Vite stack the default is the **native transform** in `@lingui/vite-plugin` 6.9.1+, whatever the React plugin; the Vite compiler rows are **fallbacks**, and [vite-spa.md](references/vite-spa.md) lists when they apply:
 
 | Signal | Compiler | Macro transform |
 |---|---|---|
+| Any Vite stack | none needed | `lingui({ macroTransform: true })` |
 | `@vitejs/plugin-react-swc` | SWC | `@lingui/swc-plugin` (pin exactly — see the swc-plugin-compatibility skill) |
 | `@vitejs/plugin-react` `^5` or lower | Babel | `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option |
 | `@vitejs/plugin-react` `^6`+, Vite 8 | Babel, standalone pass | v6 removed the `babel` option — run the macro as its own pass: `@rolldown/plugin-babel` + `linguiTransformerBabelPreset()`. Keeps the stock React plugin |
@@ -44,9 +45,9 @@ One more distinction that changes everything: `react-router` in deps **without**
 | Stack | Extra runtime | Extra dev |
 |---|---|---|
 | Next.js App Router | — | `@lingui/swc-plugin` (exact pin) |
-| Vite SPA | `@lingui/detect-locale` | `@lingui/vite-plugin` + transform plugin per compiler |
-| React Router 7 / Remix | — | `@lingui/vite-plugin`, `@lingui/format-po`, transform plugin |
-| TanStack Start | — | `@lingui/vite-plugin`, transform plugin |
+| Vite SPA | `@lingui/detect-locale` | `@lingui/vite-plugin` (also transforms macros) |
+| React Router 7 / Remix | — | `@lingui/vite-plugin` (also transforms macros), `@lingui/format-po` |
+| TanStack Start | — | `@lingui/vite-plugin` (also transforms macros) |
 
 `@lingui/detect-locale` is browser-only (`navigator`, `localStorage`, `window.location`). Never install it on an SSR stack — it throws on the server or desyncs hydration; SSR stacks resolve locale from the request (cookie / `Accept-Language`) instead.
 
@@ -75,7 +76,7 @@ npm run build                # macro wiring errors surface here
 
 **Then prove the transform ran.** A green build does not: a mis-wired macro transform is silently a no-op and the app ships in the source language. Translate one string in a non-source catalog, run the app in that locale, and confirm the translation reaches the browser (each reference gives the stack's exact check — `curl` the server-rendered HTML on SSR stacks, hard-load a deep link on the SPA). The setup is done when you have seen a translated string, not when the build is green.
 
-Raw untranslated text at that point is a compiler wiring problem — wrong plugin, bare-string SWC entry, or the `@vitejs/plugin-react@6` babel trap; see the swc-plugin-compatibility skill.
+Raw untranslated text at that point is a compiler wiring problem — wrong plugin, bare-string SWC entry, or the `@vitejs/plugin-react@6` babel trap; see the swc-plugin-compatibility skill. On the native transform, a missing `macroTransform: true` is not silent: the untransformed macro import throws "being executed outside the context of compilation" in the browser.
 
 ## Adding a new framework
 

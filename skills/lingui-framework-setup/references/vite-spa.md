@@ -9,11 +9,34 @@ npm install '@lingui/core@^6' '@lingui/react@^6' '@lingui/detect-locale@^6'
 npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6'
 ```
 
-plus the macro transform matching the compiler — that choice is the single most common way this setup silently fails, so resolve it first.
+No macro-transform package: `@lingui/vite-plugin` transforms the macros itself (below).
+
+## Build tool integration
+
+**Native macro transform** (the default, `@lingui/vite-plugin` 6.9.1+):
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react' // or '@vitejs/plugin-react-swc' — keep whichever is installed
+import { lingui } from '@lingui/vite-plugin'
+
+export default defineConfig({
+  plugins: [react(), lingui({ macroTransform: true })],
+})
+```
+
+`macroTransform: true` runs the macros through `@lingui/native-tools` (a prebuilt Rust binary that ships as a dependency of the plugin) and reads macro options from `lingui.config`. The React plugin stays stock, so the `@vitejs/plugin-react@6` trap and the SWC version pin below don't apply. Without the option, `lingui()` only compiles catalogs. The transform runs in Vite's `pre` stage, so its position in `plugins` matters only against other `pre` plugins: keep it before a `@rolldown/plugin-babel` pass that stays for something else (React Compiler).
+
+Use the fallback below only when:
+
+- the build machine has no prebuilt binary — macOS, Windows, and Linux (glibc and musl) on x64/arm64 are covered, and there is **no WASM fallback**, so browser sandboxes such as StackBlitz WebContainers can't run it;
+- the project can't move `@lingui/vite-plugin` to 6.9.1+ (6.9.0 has the transform but breaks on module ids that carry a `?query`, which route-splitting plugins produce);
+- the user wants to keep an existing Babel or SWC macro transform.
+
+### Fallback: compiler plugin — pick by compiler
 
 Whenever `@lingui/babel-plugin-lingui-macro` goes in as a **direct** dependency, install `@babel/types` beside it. It is an unmet peer of that package, and npm keeps its own copy nested under `@lingui/cli` where the hoisted plugin can't see it — `lingui extract` then dies with `ERR_MODULE_NOT_FOUND: Cannot find package '@babel/types'` before extracting anything.
-
-## Build tool integration — pick by compiler
 
 **`@vitejs/plugin-react-swc`** (SWC):
 
@@ -45,7 +68,7 @@ react({
 lingui(),
 ```
 
-**`@vitejs/plugin-react` v6+** (what `create-vite` scaffolds today): the `babel` option was **removed**. A TS config fails with `TS2353: 'babel' does not exist in type 'Options'`; a JS config is accepted in silence and macros never transform — the build stays green and the app ships untranslated. Three ways out, in order of preference:
+**`@vitejs/plugin-react` v6+** (what `create-vite` scaffolds today): the `babel` option was **removed**. A TS config fails with `TS2353: 'babel' does not exist in type 'Options'`; a JS config is accepted in silence and macros never transform — the build stays green and the app ships untranslated. The native transform above is the way out; if it is ruled out, three more, in order of preference:
 
 *On Vite 8 (Rolldown)* — run the macro as its own Babel pass and keep the stock React plugin. No compiler switch, no version pins:
 

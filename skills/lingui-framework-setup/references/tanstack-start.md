@@ -11,7 +11,7 @@ npm install '@lingui/core@^6' '@lingui/react@^6'
 npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6'
 ```
 
-plus a macro transform picked by what's installed:
+No macro-transform package: `@lingui/vite-plugin` transforms the macros itself (below). When a fallback applies ([vite-spa.md](vite-spa.md) lists when), pick it by what's installed:
 
 - `@vitejs/plugin-react@^5` → `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option.
 - `@vitejs/plugin-react@^6` (no `babel` option) → run the macro as a standalone Babel pass: `babel({ presets: [linguiTransformerBabelPreset()] })` with `@rolldown/plugin-babel` on Vite 8, or `vite-plugin-babel` with `plugins: ['@lingui/babel-plugin-lingui-macro']` on Vite ≤ 7. `linguiTransformerBabelPreset` comes from `@lingui/vite-plugin` (6.6+).
@@ -23,7 +23,25 @@ On either Babel path, install `@babel/types` alongside `@lingui/babel-plugin-lin
 
 ## Build tool integration
 
-**`@vitejs/plugin-react` `^5`** — the macro rides inside the React plugin:
+**Native macro transform** (the default):
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import viteReact from '@vitejs/plugin-react'
+import { lingui } from '@lingui/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    lingui({ macroTransform: true }), // compiles .po imports on the fly + transforms macros
+    tanstackStart(),
+    viteReact(),
+  ],
+})
+```
+
+**Fallback, `@vitejs/plugin-react` `^5`** — the macro rides inside the React plugin:
 
 ```ts
 // vite.config.ts
@@ -43,7 +61,7 @@ export default defineConfig({
 })
 ```
 
-**`@vitejs/plugin-react` `^6`+ on Vite 8** — the `babel` option is gone, so the macro runs as its own pass **after** `viteReact()`:
+**Fallback, `@vitejs/plugin-react` `^6`+ on Vite 8** — the `babel` option is gone, so the macro runs as its own pass **after** `viteReact()`:
 
 ```ts
 import babel from '@rolldown/plugin-babel'
@@ -59,7 +77,7 @@ export default defineConfig({
 })
 ```
 
-Ordering rules, both of which produce silent failures rather than errors:
+Ordering rules, both of which produce silent failures rather than errors (the first holds on every path):
 
 - **`viteReact()` must come after `tanstackStart()`** (from the Start docs) — reversed, Start's code splitting and server/client boundary handling break.
 - **The standalone macro pass goes last, after `viteReact()`.** It transforms the macro calls; running it ahead of the React plugin leaves nothing reliable for it to match on.

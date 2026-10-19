@@ -37,6 +37,8 @@ SWC has stabilised the plugin ABI over time, so mismatches are rarer than they w
 
 Next.js embeds SWC and ignores any `@swc/core` in `package.json`; only the Next.js version decides its `swc_core`. On Vite, two projects with identical `package.json` can resolve different `@swc/core` versions — the lockfile is the source of truth.
 
+**On Vite, the first fix is the native transform** ("Native Transform on Vite" below): `@lingui/vite-plugin` transforms the macros with its own prebuilt binary, outside the host's SWC, so there is no `swc_core` pairing and nothing to pin. The steps that follow are for Next.js, Rspack, and Vite builds the native binary can't run on.
+
 ### Step 2: Choose the plugin version
 
 1. Read the host's accepted `swc_core` range. The error message usually prints a `https://plugins.swc.rs/versions/from-plugin-runner/<n>` URL — open it in a browser; for Next.js, select runtime `next` and the resolved version on https://plugins.swc.rs. The site is client-rendered, so a plain fetch returns an empty page; the fallback is the host's own pin: for Next.js, `swc_core` in the root `Cargo.toml` of the `vercel/next.js` tag (`v<version>`), for `@swc/core`, its GitHub release notes.
@@ -100,7 +102,22 @@ export default nextConfig;
 }
 ```
 
-## Example: Vite Configuration
+## Native Transform on Vite
+
+```ts
+// vite.config.ts — no @lingui/swc-plugin
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc"; // or @vitejs/plugin-react
+import { lingui } from "@lingui/vite-plugin";
+
+export default defineConfig({
+  plugins: [react(), lingui({ macroTransform: true })],
+});
+```
+
+Requirements: `@lingui/vite-plugin` 6.9.1+, and a build machine with a prebuilt `@lingui/native-tools` binary (macOS, Windows, Linux glibc/musl on x64/arm64). There is no WASM fallback, so browser sandboxes such as StackBlitz WebContainers still need the SWC or Babel plugin.
+
+## Example: Vite Configuration (SWC plugin)
 
 ```ts
 // vite.config.ts
@@ -129,6 +146,8 @@ react({ plugins: [["@lingui/swc-plugin", {}]] })
 ```
 
 The same applies to Next.js `swcPlugins` and `.swcrc` `plugins` arrays.
+
+Fixing the shape is the fix. On Vite, close by offering the native transform ("Native Transform on Vite") as a follow-up the user chooses: it drops the SWC plugin for good.
 
 ## What If No Compatible Version Exists?
 
@@ -169,6 +188,7 @@ no longer works — a TypeScript config fails with TS2353 ("babel does not exist
 
 Your options on Vite:
 
-- Stay on SWC: `@vitejs/plugin-react-swc` + an exactly pinned `@lingui/swc-plugin` chosen by the steps above (preferred)
+- Native transform: `lingui({ macroTransform: true })` with the stock React plugin — no Babel, no SWC plugin, no pin (preferred; see "Native Transform on Vite")
+- Stay on SWC: `@vitejs/plugin-react-swc` + an exactly pinned `@lingui/swc-plugin` chosen by the steps above
 - Run the macro as a standalone Babel pass (`@rolldown/plugin-babel` on Vite 8, `vite-plugin-babel` on Vite ≤ 7) — the lingui-framework-setup skill has the wiring
 - Pin `@vitejs/plugin-react@^5`, which still supports the `babel` option

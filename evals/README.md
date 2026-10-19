@@ -47,7 +47,7 @@ Its scripts expect this workspace layout (learned the hard way — the aggregato
 | Skill | Evals | What they test |
 |---|---|---|
 | lingui-best-practices | 2 | macro selection on a real component (plural ternary, attributes, module-level labels, complex interpolations); catalog hygiene wiring (scripts, gitignore, drift check) |
-| lingui-framework-setup | 2 | the @vitejs/plugin-react v6 macro-wiring trap + detection-chain persistence; Next.js App Router setup under Turbopack with an existing auth middleware to merge into |
+| lingui-framework-setup | 2 | the @vitejs/plugin-react v6 macro-wiring trap (native transform or a working fallback) + detection-chain persistence; Next.js App Router setup under Turbopack with an existing auth middleware to merge into |
 | swc-plugin-compatibility | 2 | the silent bare-string plugin entry; the Wasm crash → exact-pin diagnosis |
 | enhanced-message-context | 2 | must-comment strings with domain awareness; comment-vs-context on a genuine collision |
 | find-unwrapped-strings | 2 | data-module + toast-helper recall on a partially internationalized app (13 display strings among 16 decoys); false-positive discipline — growing tuned ignores instead of weakening the rule |
