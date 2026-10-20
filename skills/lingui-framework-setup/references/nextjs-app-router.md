@@ -32,6 +32,8 @@ export default nextConfig
 
 The entry must be a `[name, options]` **tuple** even with empty options — a bare string is silently ignored and macros never transform (build still green).
 
+The plugin never reads `lingui.config`. When the config sets any `macro.*` option (named JSX placeholders, for example), use `linguiMacroSwcPlugin()` from `@lingui/swc-plugin/options` (plugin 6.2+) as the entry: it builds the same tuple with those options copied from the config. With a raw `{}` tuple, the build ignores them while `lingui extract` applies them, and for named placeholders that means different message ids and translations that never load.
+
 ## lingui.config.ts and catalog scripts
 
 ```ts
@@ -196,6 +198,44 @@ export default async function LocaleLayout({
 ```
 
 One catch the two-layout pattern does not fix: the root layout renders `<html lang>` with the source locale, and the locale layout cannot re-render `<html>`. If correct `lang`/`dir` on the first byte matters more than translated root-level error pages, collapse to a single `[locale]` layout owning `<html lang={locale}>` plus a `[locale]/[...rest]` catch-all that calls `notFound()` — both shapes are legitimate; pick one deliberately.
+
+### Single-layout shape on Next 16.3+: `next/root-params`
+
+Root params are the segments up to the root layout. In the single-layout shape the root layout lives in `src/app/[locale]/`, so `locale` is one, and from Next 16.3 `initLingui` can read it itself: layouts, pages and `generateMetadata` stop threading `params` through. (The two-layout pattern's root layout sits above `[locale]`, so it keeps `initLingui(locale)`.)
+
+```ts
+// src/initLingui.ts
+import { locale } from 'next/root-params' // getter named after the [locale] folder
+import { setI18n } from '@lingui/react/server'
+import { getI18nInstance } from './appRouterI18n'
+import { resolveLocale } from './i18n/locales'
+
+export async function initLingui() {
+  const i18n = getI18nInstance(resolveLocale(await locale()))
+  setI18n(i18n)
+  return i18n
+}
+```
+
+```tsx
+// any page or layout under src/app/[locale]/
+import { t } from '@lingui/core/macro'
+import { initLingui } from '../../initLingui' // depth follows the file
+
+export async function generateMetadata() {
+  const i18n = await initLingui()
+  return { title: t(i18n)`My App` }
+}
+
+export default async function Page() {
+  await initLingui()
+  return <Greeting />
+}
+```
+
+- Every layout and page still calls it (the rule above holds); only the `params` plumbing goes away.
+- The getter works in Server Components and the server code they call. Server Actions, Route Handlers and Client Components take the locale as an argument.
+- Its types come from `next dev`, `next build` or `next typegen`; run one before `tsc --noEmit`.
 
 ## Using translations
 

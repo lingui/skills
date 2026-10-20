@@ -127,6 +127,36 @@ extractorParserOptions: {
 }
 ```
 
+### Named JSX Placeholders
+
+Elements inside `Trans` extract as numbered tags, so the translator has to guess which tag is the link: `Read the <0>docs</0> or <1>ask</1>.` Name them in the config:
+
+```ts
+// lingui.config.ts
+export default defineConfig({
+  // ...
+  macro: {
+    jsxPlaceholderAttribute: "_t", // per-element name: <a _t="docs">
+    jsxPlaceholderDefaults: { a: "link", strong: "bold", em: "emphasis" },
+  },
+})
+```
+
+```jsx
+<Trans>Read the <a href="/docs">docs</a> or <strong>ask</strong>.</Trans>
+// Read the <link>docs</link> or <bold>ask</bold>.
+
+<Trans>Read the <a _t="docs" href="/docs">docs</a> or the <a _t="faq" href="/faq">FAQ</a>.</Trans>
+// Read the <docs>docs</docs> or the <faq>FAQ</faq>.
+```
+
+- `_t` wins over a default, and a default wins over the number.
+- **One name per distinct element.** Two `<a>` with different props in one message both map to `link`, and the macro throws at build time: name at least one with `_t`.
+- TypeScript needs the attribute declared once, in a `.d.ts`: `declare module "react" { interface Attributes { _t?: string } }` (after `import "react"`).
+- **Every macro transform must get the same options**, or the build and `lingui extract` compute different message ids and those translations never load. Babel and the Vite native transform read `lingui.config`; for the SWC plugin, use `linguiMacroSwcPlugin()` from `@lingui/swc-plugin/options` (6.2+), which copies the options from it.
+- **Turning it on re-keys messages.** The id is generated from the message, and the tag names are part of it, so every existing message with an affected tag gets a new id: `lingui extract` adds it untranslated and the old entry becomes obsolete. On a project with translations, plan to re-translate those messages, or enable it at the start of a project.
+- To enforce it, enable `no-unnamed-tag-placeholders` from `eslint-plugin-lingui` (0.15+; not in `recommended`) once the config above is in place.
+
 ## Message Ordering
 
 Control catalog message order:

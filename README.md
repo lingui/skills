@@ -75,7 +75,7 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 - Using `Trans` macro for JSX translations
 - Using `useLingui()` for non-JSX translations
 - Pluralization with `Plural` component
-- Naming placeholders with `ph()` instead of positional `{0}`
+- Naming placeholders with `ph()` instead of positional `{0}`, and JSX tags (`<link>` instead of `<0>`) with `macro.jsxPlaceholderDefaults`
 - App-wide placeholder values (product name, version) with default variables (`i18n.setVariables`, Lingui 6.10+)
 - Code with no build step (Node.js scripts, serverless functions, test runners) via the experimental runtime macro (`@lingui/core/runtime-macro`, Lingui 6.10+)
 - Date and number formatting
@@ -103,7 +103,7 @@ Framework-native Lingui setup recipes for the five major React stacks: Next.js A
 - Server-side locale resolution under SSR (cookie + `Accept-Language`) and why browser detection breaks there
 - Per-request/per-locale i18n instances — avoiding cross-request locale bleed
 - The native macro transform in `@lingui/vite-plugin` as the Vite default; the `@vitejs/plugin-react` v6 trap and SWC plugin pinning for the Babel/SWC fallbacks
-- Locale-prefixed URL strategies, middleware/proxy handling (including the Next 16 rename), language switchers per stack
+- Locale-prefixed URL strategies, middleware/proxy handling (including the Next 16 rename), `next/root-params` on Next 16.3+, language switchers per stack
 - A verification sequence that proves the macro transform actually ran
 
 **Use when:**

@@ -383,6 +383,8 @@ t`Hello ${ph({ name: getUserName() })}`;
 
 `ph()` also works inside `Trans`, `Plural`, and `Select`.
 
+**Named tags** (`<link>docs</link>` instead of the numbered `<0>docs</0>`) are a `lingui.config` option: [configuration.md](references/configuration.md#named-jsx-placeholders) has the setup and what it costs a project that already has translations.
+
 ### Use Trans for JSX, t for Strings
 
 Choose the right tool:
