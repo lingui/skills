@@ -1,6 +1,6 @@
 # Integration Recipes
 
-The macro decision tree in `SKILL.md` covers where a string lives. This file covers the **seams** — the places where Lingui meets another library whose API expects a plain string, and the obvious move produces something that compiles, ships, and is wrong.
+The macro decision tree in `SKILL.md` covers where a string lives. This file covers the **seams** — the places where Lingui meets another library whose API expects a plain string, or a runtime with no compiler at all, and the obvious move produces something that compiles, ships, and is wrong.
 
 Each recipe states the trap first, because the trap is what makes the recipe necessary.
 
@@ -159,6 +159,33 @@ toast.success(
 This is the same shape most codebases already use for errors — a stable `code` mapped to a message at the boundary — extended to success messages.
 
 Where a server-side string genuinely must be translated (an outgoing email, a PDF), thread the request's i18n instance in explicitly and resolve with `i18n._(descriptor)`. Never rely on the global singleton to have the right locale.
+
+## Code with no build step: the runtime macro
+
+**The trap.** Macros need a compile step. In a file Node runs as-is — a seed or migration script, a cron job, a serverless function deployed without a bundler, a test the runner doesn't transform — the macro fails at runtime (`… is being executed outside the context of compilation`, or a missing `babel-plugin-macros`). The usual way around it, `i18n._("Welcome back, {name}", { name })`, turns the source text into an explicit id: the catalog flags it `js-lingui-explicit-id`, a second id style beside the generated ids everywhere else.
+
+**The recipe** (Lingui 6.10+, **experimental** — the API and import path may change in a minor release). Import from `@lingui/core/runtime-macro`: plain functions that build the same descriptor, with the same generated id, as the compile-time macros.
+
+```ts
+import { i18n } from '@lingui/core'
+import { msg, plural } from '@lingui/core/runtime-macro'
+
+const welcome = msg`Welcome back, ${{ name }}`
+const digest = msg`${plural({ count }, { one: 'You have # new message', other: 'You have # new messages' })}`
+
+i18n._(welcome)
+i18n._(digest)
+```
+
+What differs from the compile-time macros:
+
+- **Name every placeholder:** `${{ name }}`. A bare `${name}` throws, because a variable's name doesn't exist at runtime.
+- **`plural`, `select` and `selectOrdinal` live inside `msg`.** Alone, they return a descriptor at runtime but a translated string wherever a build step compiles the same import, so shared code would behave two ways.
+- **An option that needs a placeholder is a nested `msg`:** ``select({ role }, { admin: msg`Admin ${{ name }}`, other: msg`Member ${{ name }}` })``.
+- **Resolve with `i18n._(descriptor)`** (or `const t = i18n.t`) on an instance activated for the reader's locale. There is no `t` macro and no JSX.
+- **Turn on extraction:** `experimental: { runtimeMacro: true }` in `lingui.config`. Without it, `lingui extract` skips these imports and the messages never reach the catalogs.
+
+Where a build step exists, stay on `@lingui/core/macro`: the compile-time macros can strip source messages from production bundles, and the runtime macro ships them.
 
 ## Locale-aware `Intl` formatting
 
