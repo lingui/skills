@@ -8,11 +8,12 @@ Detection: RR7 = `react-router@^7` + `@react-router/dev` + `react-router.config.
 
 ```bash
 npm install '@lingui/core@^6' '@lingui/react@^6'
-npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6' '@lingui/format-po@^6' \
-  '@lingui/babel-plugin-lingui-macro@^6' '@vitejs/plugin-react@^5'
+npm install -D '@lingui/cli@^6' '@lingui/vite-plugin@^6' '@lingui/format-po@^6'
 ```
 
-`@vitejs/plugin-react` is not in the RR7 scaffold — the `reactRouter()` plugin handles React itself but exposes no Babel hook, so the macro transform needs its own Babel-capable React plugin. The `^5` pin is deliberate: v6 removed the `babel` option this setup depends on. (Alternative: `vite-plugin-babel-macros` works too; prefer the plugin-react path because it matches Lingui's installation guide.) If the project already uses `@vitejs/plugin-react-swc`, use `@lingui/swc-plugin` (exact pin — see swc-plugin-compatibility) inside it instead.
+No macro-transform package: `@lingui/vite-plugin` transforms the macros itself (below), so the React Router plugin is the only React plugin.
+
+**Fallback** ([vite-spa.md](vite-spa.md) lists when): add `'@lingui/babel-plugin-lingui-macro@^6' '@vitejs/plugin-react@^5'`. `@vitejs/plugin-react` is not in the RR7 scaffold — the `reactRouter()` plugin handles React itself but exposes no Babel hook, so the Babel macro transform needs its own Babel-capable React plugin. The `^5` pin is deliberate: v6 removed the `babel` option this setup depends on. (Alternative: `vite-plugin-babel-macros` works too; prefer the plugin-react path because it matches Lingui's installation guide.) If the project already uses `@vitejs/plugin-react-swc`, use `@lingui/swc-plugin` (exact pin — see swc-plugin-compatibility) inside it instead.
 
 Add `@babel/types` too: it is an unmet peer of `@lingui/babel-plugin-lingui-macro` whenever that plugin is a direct dependency, and `lingui extract` crashes with `ERR_MODULE_NOT_FOUND` without it. On a Vite 8 project the `^5` pin is avoidable — keep `@vitejs/plugin-react` at v6 and run the macro as the standalone Babel pass described in [vite-spa.md](vite-spa.md), in the same plugin position as `react()` below.
 
@@ -20,7 +21,21 @@ No `@lingui/detect-locale` — it is browser-only and throws or lies under SSR; 
 
 ## Build tool integration
 
-Plugin order is a contract, not a style choice:
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { reactRouter } from '@react-router/dev/vite' // Remix: import { vitePlugin as remix } from '@remix-run/dev'
+import { lingui } from '@lingui/vite-plugin'
+
+export default defineConfig({
+  plugins: [
+    reactRouter(),
+    lingui({ macroTransform: true }), // transforms macros + serves compiled .po imports
+  ],
+})
+```
+
+**Fallback (compiler plugin)** — plugin order is a contract, not a style choice:
 
 ```ts
 // vite.config.ts
@@ -219,7 +234,8 @@ Everything else — loader shape, cookie helper, instance map, switcher action �
 
 ## Gotchas
 
-- `Trans is not defined` at build/runtime → the macro transform didn't run: `@vitejs/plugin-react` missing, on v6 (no `babel` option), or ordered before `reactRouter()`.
+- `Parse error` from `vite-plugin-lingui-macro-transform` on a `?__react-router-build-client-route` id → `@lingui/vite-plugin` 6.9.0, which can't parse the query React Router adds to client routes on `vite build`; upgrade to 6.9.1+.
+- `Trans is not defined` at build/runtime (fallback path) → the macro transform didn't run: `@vitejs/plugin-react` missing, on v6 (no `babel` option), or ordered before `reactRouter()`.
 - `Cannot find name 'Route'` → generated types missing; run `npx react-router typegen` (the dev server normally does this, but not on a fresh clone).
 - Language switch appears to work then reverts on the next page → the action wrote the cookie but the switcher navigated client-side without revalidation; the `redirect()` from the action is what forces the round trip.
 

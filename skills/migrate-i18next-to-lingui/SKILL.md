@@ -33,12 +33,12 @@ npm install @lingui/core @lingui/react
 npm install --save-dev @lingui/cli
 
 # Macro support - pick one based on build tool:
+# Vite (transforms macros itself — see Step 3)
+npm install --save-dev @lingui/vite-plugin
 # Babel
 npm install --save-dev @lingui/babel-plugin-lingui-macro
 # SWC
 npm install --save-dev @lingui/swc-plugin
-# Vite (also install the Babel macro plugin above — see Step 3)
-npm install --save-dev @lingui/vite-plugin
 ```
 
 ## Step 2: Create `lingui.config.js`
@@ -63,17 +63,14 @@ export default defineConfig({
 **Vite** (`vite.config.ts`):
 ```ts
 import { lingui } from "@lingui/vite-plugin";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react"; // or @vitejs/plugin-react-swc
 
 export default {
-  plugins: [
-    react({ babel: { plugins: ["@lingui/babel-plugin-lingui-macro"] } }),
-    lingui(),
-  ],
+  plugins: [react(), lingui({ macroTransform: true })],
 };
 ```
 
-`lingui()` alone does not transform macros — the Babel macro plugin inside `react()` does that (requires `@vitejs/plugin-react@^5`; v6 removed the `babel` option — use the SWC variant instead).
+`macroTransform: true` (`@lingui/vite-plugin` 6.9.1+) transforms the macros with a prebuilt native binary — the React plugin needs no Lingui configuration, so `@vitejs/plugin-react` v5 and v6 both work. Without the option, `lingui()` only compiles catalogs. On a build platform without a prebuilt binary, use a Babel or SWC macro plugin — the lingui-framework-setup skill lists the platforms and has both fallbacks.
 
 The `lingui()` plugin also compiles `.po` catalogs on the fly, so on Vite the app can import catalogs directly and skip the `lingui compile` step entirely:
 
@@ -106,7 +103,7 @@ module.exports = {
 };
 ```
 
-**Build-tooling caveats**: `@lingui/swc-plugin` must be version-matched to your SWC runtime, plugin entries must be `[name, options]` tuples (a bare string silently disables macros), and `@vitejs/plugin-react@6` removed Babel support entirely — see the `swc-plugin-compatibility` skill for all three.
+**Build-tooling caveats** (Babel/SWC paths; the Vite native transform has none of them): `@lingui/swc-plugin` must be version-matched to your SWC runtime, plugin entries must be `[name, options]` tuples (a bare string silently disables macros), and `@vitejs/plugin-react@6` removed Babel support entirely — see the `swc-plugin-compatibility` skill for all three.
 
 ## Step 4: Replace i18n Initialization
 

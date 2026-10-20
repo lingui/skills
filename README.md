@@ -93,14 +93,14 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 
 ### lingui-framework-setup
 
-Framework-native Lingui setup recipes for the five major React stacks: Next.js App Router (RSC), Vite SPA (SWC and Babel), React Router 7 framework mode, Remix v2, and TanStack Start.
+Framework-native Lingui setup recipes for the five major React stacks: Next.js App Router (RSC), Vite SPA, React Router 7 framework mode, Remix v2, and TanStack Start.
 
 **What it covers:**
 
 - Detection-first setup: identify the framework, compiler (SWC vs Babel), and router before recommending anything
 - Server-side locale resolution under SSR (cookie + `Accept-Language`) and why browser detection breaks there
 - Per-request/per-locale i18n instances — avoiding cross-request locale bleed
-- The `@vitejs/plugin-react` v6 trap (removed `babel` option) and the SWC plugin pinning discipline
+- The native macro transform in `@lingui/vite-plugin` as the Vite default; the `@vitejs/plugin-react` v6 trap and SWC plugin pinning for the Babel/SWC fallbacks
 - Locale-prefixed URL strategies, middleware/proxy handling (including the Next 16 rename), language switchers per stack
 - A verification sequence that proves the macro transform actually ran
 
@@ -152,7 +152,7 @@ Diagnose and fix `@lingui/swc-plugin` compatibility errors with Next.js, Rspack,
 - How to choose a compatible plugin version: host version → `swc_core` range → peer check
 - Version pinning strategies and the peer-dependency trap (plugin majors require matching `@lingui/core` majors)
 - The plugin tuple-shape trap that silently disables macros
-- Alternative solutions (Babel plugin) and the `@vitejs/plugin-react@6` caveat
+- Alternative solutions (the Vite native macro transform, the Babel plugin) and the `@vitejs/plugin-react@6` caveat
 
 ### find-unwrapped-strings
 

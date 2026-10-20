@@ -9,9 +9,9 @@
       "files": ["evals/migrate-i18next-to-lingui/files/notes-app"],
       "expectations": [
         "No imports from i18next, react-i18next, or i18next-browser-languagedetector remain under src/",
-        "package.json no longer lists i18next, react-i18next, or i18next-browser-languagedetector, and adds @lingui/core, @lingui/react, @lingui/cli plus a macro transform path (@lingui/vite-plugin with a Babel or SWC lingui macro plugin)",
+        "package.json no longer lists i18next, react-i18next, or i18next-browser-languagedetector, and adds @lingui/core, @lingui/react, @lingui/cli plus a macro transform path (@lingui/vite-plugin, used with macroTransform: true or together with a Babel or SWC lingui macro plugin)",
         "A lingui config file exists with sourceLocale en and locales including de",
-        "vite.config.ts wires the Lingui macro transform (the lingui vite plugin plus the babel or swc macro plugin configuration)",
+        "vite.config.ts wires the Lingui macro transform (lingui({ macroTransform: true }), or the lingui vite plugin plus the babel or swc macro plugin configuration)",
         "The note_one/note_other plural pair becomes a single ICU plural via the Plural component or plural macro — no ternary between two strings",
         "The welcome message keeps its rich-text formatting (<strong>) and interpolated name via Lingui's Trans macro",
         "The app is wrapped in I18nProvider, and the language switcher uses i18n.load/i18n.activate (a dynamic catalog import is acceptable)",
