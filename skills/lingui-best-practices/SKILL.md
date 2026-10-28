@@ -1,6 +1,6 @@
 ---
 name: lingui-best-practices
-description: Implement internationalization with Lingui in React and JavaScript applications. Use when adding i18n, translating UI, working with Trans/useLingui/Plural, extracting messages, compiling catalogs, or when the user mentions Lingui, internationalization, i18n, translations, locales, message extraction, ICU MessageFormat, or working with .po files.
+description: Implement internationalization with Lingui in React, Vue and JavaScript applications. Use when adding i18n, translating UI, working with Trans/useLingui/Plural, extracting messages, compiling catalogs, or when the user mentions Lingui, internationalization, i18n, translations, locales, message extraction, ICU MessageFormat, or working with .po files.
 ---
 
 # Lingui Best Practices
@@ -33,6 +33,8 @@ import { t, msg, plural, select } from "@lingui/core/macro";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 ```
+
+**Vue 3:** the examples here are React. In a Vue project import the macros from `@lingui/vue/macro` and the runtime from `@lingui/vue`. Templates use `{{ name }}` inside `<Trans>`, `_0` for exact plural forms (attributes can't start with `=`), named slots (`<template #one>`) for plural forms with elements or variables, and `useLingui()` returns `i18n` as a ref (`i18n.value.locale` in `<script>`). Setup and template rules: the lingui-framework-setup skill, Vue reference. Catalog hygiene, message design and the shared locale module below apply as written.
 
 ## Setup I18nProvider
 

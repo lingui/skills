@@ -95,7 +95,7 @@ Comprehensive guide for implementing internationalization with Lingui in React a
 
 ### lingui-framework-setup
 
-Framework-native Lingui setup recipes for the five major React stacks: Next.js App Router (RSC), Vite SPA, React Router 7 framework mode, Remix v2, and TanStack Start.
+Framework-native Lingui setup recipes for the five major React stacks — Next.js App Router (RSC), Vite SPA, React Router 7 framework mode, Remix v2, and TanStack Start — and Vue 3 on Vite.
 
 **What it covers:**
 
