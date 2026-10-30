@@ -1,6 +1,6 @@
 ---
 name: lingui-framework-setup
-description: Set up Lingui in a React framework. Use when adding Lingui to a Next.js App Router, Vite, React Router 7, Remix, or TanStack Start project, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, or when a working setup breaks after a framework or build-tool upgrade.
+description: Set up Lingui in a React or Vue framework. Use when adding Lingui to a Next.js App Router, Vite, React Router 7, Remix, TanStack Start, or Vue 3 (Vite, Nuxt) project, when wiring locale detection, locale-prefixed URLs, or SSR locale resolution, or when a working setup breaks after a framework or build-tool upgrade.
 ---
 
 # Lingui Framework Setup
@@ -21,12 +21,15 @@ Read `package.json` and the build config before recommending anything. Never gue
 | `@react-router/dev` in devDeps + `react-router.config.*` | React Router 7 framework mode (SSR) | [react-router-remix.md](references/react-router-remix.md) |
 | `@remix-run/dev` ≥ 2.7 in devDeps + `vite` | Remix v2 (Vite build, SSR) | [react-router-remix.md](references/react-router-remix.md) |
 | `vite` + `react`, none of the above | Vite SPA (incl. declarative React Router, TanStack Router) | [vite-spa.md](references/vite-spa.md) |
+| `vue` ≥ 3.4 + `@vitejs/plugin-vue` | Vue 3 on Vite (incl. Vue Router) | [vue-vite.md](references/vue-vite.md) |
+| `nuxt` in deps | Nuxt (SSR) | Brief notes in [vue-vite.md](references/vue-vite.md) |
 
-Macro transform (decides what to install). On every Vite stack the default is the **native transform** in `@lingui/vite-plugin` 6.9.1+, whatever the React plugin; the Vite compiler rows are **fallbacks**, and [vite-spa.md](references/vite-spa.md) lists when they apply:
+Macro transform (decides what to install). On every Vite React stack the default is the **native transform** in `@lingui/vite-plugin` 6.9.1+, whatever the React plugin; the Vite compiler rows are **fallbacks**, and [vite-spa.md](references/vite-spa.md) lists when they apply:
 
 | Signal | Compiler | Macro transform |
 |---|---|---|
-| Any Vite stack | none needed | `lingui({ macroTransform: true })` |
+| Any Vite React stack | none needed | `lingui({ macroTransform: true })` |
+| Vue (Vite, Nuxt) | Babel, via `@lingui/vue` | `linguiVue()` from `@lingui/vue/vite` — also compiles `<template>` macros. The native transform doesn't support Vue: never `macroTransform: true` |
 | `@vitejs/plugin-react-swc` | SWC | `@lingui/swc-plugin` (pin exactly — see the swc-plugin-compatibility skill) |
 | `@vitejs/plugin-react` `^5` or lower | Babel | `@lingui/babel-plugin-lingui-macro` via the plugin's `babel` option |
 | `@vitejs/plugin-react` `^6`+, Vite 8 | Babel, standalone pass | v6 removed the `babel` option — run the macro as its own pass: `@rolldown/plugin-babel` + `linguiTransformerBabelPreset()`. Keeps the stock React plugin |
@@ -38,7 +41,7 @@ One more distinction that changes everything: `react-router` in deps **without**
 
 ## Step 2 — Common steps (every framework)
 
-**Version gate.** Lingui 6 is current: ESM-only, requires Node ≥ 22.19 (or ≥ 24). Install `@lingui/core@^6 @lingui/react@^6` and dev `@lingui/cli@^6`. If the project cannot meet the Node requirement, pin every `@lingui/*` package to `^5` — do not mix majors. Do not install `@lingui/macro`: since v5 the macros live at `@lingui/react/macro` and `@lingui/core/macro`.
+**Version gate.** Lingui 6 is current: ESM-only, requires Node ≥ 22.19 (or ≥ 24). Install `@lingui/core@^6 @lingui/react@^6` (Vue: `@lingui/vue@^6`) and dev `@lingui/cli@^6`. If the project cannot meet the Node requirement, pin every `@lingui/*` package to `^5` — do not mix majors. Do not install `@lingui/macro`: since v5 the macros live at `@lingui/react/macro` and `@lingui/core/macro`.
 
 **Per-stack extras** (details in each reference):
 
@@ -48,6 +51,7 @@ One more distinction that changes everything: `react-router` in deps **without**
 | Vite SPA | `@lingui/detect-locale` | `@lingui/vite-plugin` (also transforms macros) |
 | React Router 7 / Remix | — | `@lingui/vite-plugin` (also transforms macros), `@lingui/format-po` |
 | TanStack Start | — | `@lingui/vite-plugin` (also transforms macros) |
+| Vue 3 on Vite | `@lingui/detect-locale` | `@lingui/vite-plugin` (catalogs only), `@lingui/extractor-vue`, `@babel/core` |
 
 `@lingui/detect-locale` is browser-only (`navigator`, `localStorage`, `window.location`). Never install it on an SSR stack — it throws on the server or desyncs hydration; SSR stacks resolve locale from the request (cookie / `Accept-Language`) instead.
 
@@ -70,7 +74,7 @@ Run in this order; each step must pass before the next:
 ```bash
 npx lingui extract --clean   # catalogs regenerate; count matches expectations
 npx lingui compile           # only on stacks with compiled catalogs (Next.js)
-npx tsc --noEmit             # types resolve, incl. catalog imports
+npx tsc --noEmit             # types resolve, incl. catalog imports (Vue: vue-tsc --noEmit)
 npm run build                # macro wiring errors surface here
 ```
 
