@@ -235,6 +235,8 @@ function MyComponent() {
 }
 ```
 
+When only some languages need a value shown differently (capitalized where German starts the sentence with it), code is the wrong place: it changes every language. Since Lingui 6.12, the translation can call a formatter registered on the instance, `{type, capitalize}`. See [integration-recipes.md](references/integration-recipes.md#formatting-the-translator-decides-custom-formatters).
+
 ## Message IDs and Context
 
 ### Explicit IDs

@@ -234,6 +234,34 @@ Two related cases worth checking while you are in there:
 - **Unit suffixes** — `['B','KB','MB','GB']` — have an `Intl` equivalent:
   `{ style: 'unit', unit: 'megabyte', unitDisplay: 'short' }` localizes the symbol too.
 
+## Formatting the translator decides: custom formatters
+
+**The trap.** Some formatting belongs to one language, not to the value. German puts the noun first in "Your {type} has been removed", so `album` must become `Album` there, and only there. Code can't make that call: `capitalize(type)` at the call site changes every language, and a `locale === 'de'` branch moves translation decisions into components, one per language.
+
+**The recipe** (Lingui 6.12+). Register a formatter on the instance, and let the translation opt in with `{value, name}`:
+
+```ts
+// once, at startup — or setupI18n({ formatters }) when you create the instance
+i18n.setFormatters({
+  capitalize: (value, { locale }) => {
+    const [first = '', ...rest] = String(value ?? '')
+    return first.toLocaleUpperCase(locale) + rest.join('')
+  },
+})
+```
+
+```po
+msgid "Your {type} has been removed"
+msgstr "{type, capitalize} wurde entfernt"
+```
+
+The source keeps the plain `{type}`: the macros have no syntax that names a formatter. Formatting that every language needs stays in code, per the `Intl` recipe above.
+
+- **Register on every instance that renders.** Per-locale `setupI18n()` instances (the SSR setups in the lingui-framework-setup skill) don't see formatters set on the global `i18n`: pass `formatters` to each one. A missing formatter is not an error. The value renders unformatted, and only development builds warn.
+- `plural`, `select`, `selectordinal`, `number`, `date` and `time` are reserved. Registering one of them throws.
+- A parameter arrives as one raw string: `{genres, list, disjunction}` passes `param: 'disjunction'`. A formatter that needs more parses it itself.
+- Translators can't use a formatter they don't know about: list the available names in the brief or style guide they work from. Some TMS QA checks report `{type, capitalize}` as a placeholder missing from the source, so expect to allow it there.
+
 ## Descriptors change types
 
 Converting a field from `string` to `MessageDescriptor` makes the compiler point at every consuming site, which is what makes the `msg` pattern safe to apply in bulk. Two things slip past it — React keys, and string methods on what is now an object. Both are covered in the main skill under "Use msg for Lazy Translations".
