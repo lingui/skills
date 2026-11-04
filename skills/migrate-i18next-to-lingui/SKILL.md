@@ -436,6 +436,8 @@ function Component() {
 }
 ```
 
+**Custom formats** (added with `i18next.services.formatter.add(name, fn)`, used as `{{val, name}}`): Lingui 6.12+ registers them with `i18n.setFormatters({ name: (value, { locale, param }) => … })`. The signature differs from i18next's `(value, lng, options)`. A translation keeps the format as `{val, name}`. A source message can't: the macros only generate `{val}`, so where the source text applied the format, apply it in code before the value reaches the message. The names `number`, `date`, `time`, `plural`, `select` and `selectordinal` are reserved, so rename an i18next format that uses one of them. The lingui-best-practices skill has the full recipe (integration recipes, custom formatters).
+
 ### Context (disambiguation)
 
 **Before (i18next):**
