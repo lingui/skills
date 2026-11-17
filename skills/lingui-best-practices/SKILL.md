@@ -1,6 +1,6 @@
 ---
 name: lingui-best-practices
-description: Implement internationalization with Lingui in React, Vue and JavaScript applications. Use when adding i18n, translating UI, working with Trans/useLingui/Plural, extracting messages, compiling catalogs, or when the user mentions Lingui, internationalization, i18n, translations, locales, message extraction, ICU MessageFormat, or working with .po files.
+description: Implement internationalization with Lingui in React, Vue and JavaScript applications. Use when adding i18n, translating UI, working with Trans/useLingui/Plural, extracting messages, compiling catalogs, or when the user mentions Lingui, message extraction, ICU MessageFormat, or working with .po files. Not for projects on another i18n library (i18next, react-intl, next-intl) unless they are moving to Lingui.
 ---
 
 # Lingui Best Practices
@@ -402,12 +402,12 @@ const { t } = useLingui();
 <img alt={t`Profile picture`} />
 ```
 
-### Don't Use Macros at Module Level
+### Don't Call `t` at Module Level
 
-Macros need component context - use `msg` instead:
+A module-level `t` resolves once, at import time, against whatever locale is active then, and never updates. Define with `msg` and resolve at render time:
 
 ```jsx
-// ❌ Bad - won't work
+// ❌ Bad - frozen in the locale active at import
 import { t } from "@lingui/core/macro";
 const LABELS = [t`Red`, t`Green`, t`Blue`];
 

@@ -23,7 +23,7 @@ function ColorList() {
 }
 ```
 
-**Why it fails**: The `t` macro requires access to the active i18n context. At module level, the context isn't available and messages are evaluated only once.
+**Why it fails**: The code runs, but a module-level `t` resolves once, at import time, against whatever locale is active then (often the source locale, before `i18n.activate` runs). The result is a plain string that never updates when the locale changes.
 
 ### The Solution
 
