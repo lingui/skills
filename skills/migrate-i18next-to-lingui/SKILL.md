@@ -91,7 +91,7 @@ declare module "*.po" {
 
 **Babel** (`.babelrc` or `babel.config.js`):
 ```json
-{ "plugins": ["macros"] }
+{ "plugins": ["@lingui/babel-plugin-lingui-macro"] }
 ```
 
 **Next.js with SWC** (`next.config.js`):
@@ -344,7 +344,7 @@ i18n.activate("en");
 
 ## Step 9: Convert Existing Translation Catalogs
 
-See [catalog-conversion.md](references/catalog-conversion.md) for and patterns.
+See [catalog-conversion.md](references/catalog-conversion.md) for the two ID strategies (message-based vs. preserved i18next keys), namespace handling, and how to verify the converted catalogs.
 
 **Key concept:** i18next uses JSON with dotted keys; Lingui uses `.po` files with the message as the ID (or an explicit ID you provide).
 
@@ -475,7 +475,7 @@ const pronoun = select(gender, {
 - **Don't call `t\`...\`` at module level.** Use `msg\`...\`` instead and translate with `_(descriptor)` at render time.
 - **After locale change**, call both `i18n.load(locale, messages)` and `i18n.activate(locale)`.
 - **Wrap the entire app** in `<I18nProvider i18n={i18n}>` before any component uses `useLingui` or `Trans`.
-- **Always run `lingui compile`** before building for production; the app imports compiled `.js` catalogs, not `.po` files.
+- **Run `lingui compile` before every production build**, unless the app imports `.po` catalogs through `@lingui/vite-plugin` (Step 3), which compiles them at build time.
 - **Generated IDs change if message text changes.** If stability matters, use explicit `id` props.
 
 ## Additional Resources

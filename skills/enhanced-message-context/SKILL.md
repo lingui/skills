@@ -1,6 +1,6 @@
 ---
 name: enhanced-message-context
-description: Add translator comments to Lingui messages so translations are accurate. Use when adding or modifying translatable messages, when strings are short or ambiguous ("Back", "Delete", "Post"), when placeholders are unclear ({count}, {name}), when deciding between comment and context, or when auditing extracted .po catalogs for missing translator context.
+description: Add translator comments to Lingui messages so translations are accurate. Use in Lingui projects when adding or modifying translatable messages, when strings are short or ambiguous ("Back", "Delete", "Post"), when placeholders are unclear ({count}, {name}), when deciding between comment and context, or when auditing extracted .po catalogs for missing translator context.
 ---
 
 # Enhanced Message Context
